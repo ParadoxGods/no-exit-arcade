@@ -1,0 +1,51 @@
+name: Update Leaderboard
+
+on:
+  issues:
+    types:
+      - opened
+      - edited
+      - reopened
+      - closed
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: read
+
+concurrency:
+  group: leaderboard
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.event_name != 'issues' || startsWith(github.event.issue.title, 'SCORE |')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Out Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generate Leaderboard Feed
+        run: node scripts/update-leaderboard.mjs
+        env:
+          GITHUB_API_URL: ${{ github.api_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit Updated Feed
+        run: |
+          if git diff --quiet -- leaderboard.json; then
+            echo "No leaderboard changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add leaderboard.json
+          git commit -m "Update leaderboard feed"
+          git push
