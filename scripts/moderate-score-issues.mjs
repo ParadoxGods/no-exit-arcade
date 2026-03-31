@@ -5,7 +5,7 @@ import {
 
 const API_BASE = process.env.GITHUB_API_URL || "https://api.github.com";
 const REPOSITORY = process.env.GITHUB_REPOSITORY || "ParadoxGods/no-exit-arcade";
-const TOKEN = process.env.GITHUB_TOKEN;
+const TOKEN = process.env.MODERATION_TOKEN || process.env.GITHUB_TOKEN;
 
 if (!TOKEN) {
   throw new Error("GITHUB_TOKEN is required for score moderation.");

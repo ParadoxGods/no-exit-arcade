@@ -26,7 +26,7 @@
 - The results screen opens a prefilled issue composer with a score payload in the title/body.
 - GitHub Actions runs `scripts/moderate-score-issues.mjs` first, then `scripts/update-leaderboard.mjs`.
 - Score payloads now include versioned anti-cheat fields: bosses, wave score, kill score, run duration, loadout signature, and kill breakdown.
-- Invalid score issues are deleted when possible; if the token cannot hard-delete them, the workflow closes them and excludes them from the feed.
+- Invalid score issues are deleted with `SCORE_MOD_TOKEN` when that repo secret is present; otherwise the workflow closes them and excludes them from the feed.
 - The live page reads `leaderboard.json` and polls periodically so the board updates without exposing write credentials in the browser.
 
 ## Deployment Target

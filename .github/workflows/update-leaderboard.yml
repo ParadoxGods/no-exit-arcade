@@ -39,6 +39,7 @@ jobs:
         env:
           GITHUB_API_URL: ${{ github.api_url }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          MODERATION_TOKEN: ${{ secrets.SCORE_MOD_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate Leaderboard Feed
