@@ -1,6 +1,17 @@
 {
-  "generatedAt": "2026-03-31T00:25:41.020Z",
+  "generatedAt": "2026-03-31T00:47:45.363Z",
   "entries": [
+    {
+      "player": "Pexo",
+      "score": 3380,
+      "waves": 3,
+      "kills": 76,
+      "combo": 16,
+      "scrap": 11,
+      "build": "Base",
+      "url": "https://github.com/ParadoxGods/no-exit-arcade/issues/6",
+      "createdAt": "2026-03-31T00:47:35Z"
+    },
     {
       "player": "Valid Test",
       "score": 22,
