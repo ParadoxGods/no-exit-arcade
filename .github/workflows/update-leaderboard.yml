@@ -11,7 +11,10 @@ on:
 
 permissions:
   contents: write
-  issues: read
+  issues: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 concurrency:
   group: leaderboard
@@ -30,6 +33,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Moderate Score Issues
+        run: node scripts/moderate-score-issues.mjs
+        env:
+          GITHUB_API_URL: ${{ github.api_url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate Leaderboard Feed
         run: node scripts/update-leaderboard.mjs

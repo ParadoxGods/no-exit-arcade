@@ -24,7 +24,9 @@
 ## Leaderboard Design
 - Public score submissions are GitHub issues in `ParadoxGods/no-exit-arcade`.
 - The results screen opens a prefilled issue composer with a score payload in the title/body.
-- GitHub Actions runs `scripts/update-leaderboard.mjs` on score issue activity and rewrites `leaderboard.json`.
+- GitHub Actions runs `scripts/moderate-score-issues.mjs` first, then `scripts/update-leaderboard.mjs`.
+- Score payloads now include versioned anti-cheat fields: bosses, wave score, kill score, run duration, loadout signature, and kill breakdown.
+- Invalid score issues are deleted when possible; if the token cannot hard-delete them, the workflow closes them and excludes them from the feed.
 - The live page reads `leaderboard.json` and polls periodically so the board updates without exposing write credentials in the browser.
 
 ## Deployment Target
@@ -34,11 +36,13 @@
 ## Important Files
 - `index.html`: game, UI, settings, leaderboard client.
 - `leaderboard.json`: public leaderboard feed served by Pages.
+- `scripts/leaderboard-core.mjs`: shared parsing and validation logic for score issues.
 - `.github/workflows/update-leaderboard.yml`: issue-to-feed automation.
-- `scripts/update-leaderboard.mjs`: leaderboard feed generator.
+- `scripts/moderate-score-issues.mjs`: anti-cheat enforcement for submitted scores.
+- `scripts/update-leaderboard.mjs`: leaderboard feed generator that only includes validated scores.
 
 ## Resume Checklist
 1. Confirm GitHub Pages is still serving from `main` root.
 2. Verify `leaderboard.json` is being updated by the action after a score issue is opened.
-3. If the leaderboard looks stale, check the Actions tab for the `Update Leaderboard` workflow.
-4. If gameplay changes add new score fields, update both `buildLeaderboardIssueUrl()` and `scripts/update-leaderboard.mjs`.
+3. If a score disappears unexpectedly, check the Actions tab and the moderation script logic in `scripts/leaderboard-core.mjs`.
+4. If gameplay changes add new score fields, update both `buildLeaderboardIssueUrl()` and the validators in `scripts/leaderboard-core.mjs`.
