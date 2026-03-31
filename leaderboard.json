@@ -1,4 +1,16 @@
 {
-  "generatedAt": null,
-  "entries": []
+  "generatedAt": "2026-03-31T00:00:21.519Z",
+  "entries": [
+    {
+      "player": "LaunchCheck",
+      "score": 11111,
+      "waves": 5,
+      "kills": 77,
+      "combo": 12,
+      "scrap": 9,
+      "build": "Base",
+      "url": "https://github.com/ParadoxGods/no-exit-arcade/issues/1",
+      "createdAt": "2026-03-31T00:00:07Z"
+    }
+  ]
 }
