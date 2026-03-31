@@ -553,42 +553,122 @@
     }
 
     .mobile-actions {
+      display: none;
+      padding:
+        calc(12px + env(safe-area-inset-top))
+        calc(12px + env(safe-area-inset-right))
+        calc(18px + env(safe-area-inset-bottom))
+        calc(12px + env(safe-area-inset-left));
+      align-items: stretch;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .mobile-zone {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 0;
+      min-height: 100%;
+      pointer-events: auto;
+    }
+
+    .mobile-zone::before {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      height: min(36vh, 260px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(10, 13, 20, 0.22);
+    }
+
+    .mobile-zone-label {
+      position: absolute;
+      left: 14px;
+      bottom: calc(min(36vh, 260px) + 10px);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .mobile-zone-right .mobile-zone-label {
+      left: auto;
+      right: 14px;
+      text-align: right;
+    }
+
+    .mobile-stick {
+      position: absolute;
+      width: 104px;
+      height: 104px;
+      margin-left: -52px;
+      margin-top: -52px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(10, 13, 20, 0.84);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.14s ease;
+      pointer-events: none;
+    }
+
+    .mobile-stick.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .mobile-knob {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 44px;
+      height: 44px;
+      margin-left: -22px;
+      margin-top: -22px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: var(--ink);
+      transition: transform 0.05s linear;
+    }
+
+    .mobile-cluster {
+      position: absolute;
+      left: 50%;
+      bottom: calc(18px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
       display: flex;
-      align-items: flex-end;
-      justify-content: flex-end;
-      padding: 18px;
+      flex-direction: column;
       gap: 10px;
+      pointer-events: none;
+      z-index: 2;
     }
 
     .mobile-btn {
-      width: 92px;
-      height: 92px;
-      border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(7, 11, 22, 0.66);
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+      width: 104px;
+      min-height: 62px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(10, 13, 20, 0.9);
       color: var(--ink);
       font: inherit;
       font-weight: 700;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       pointer-events: auto;
-      display: none;
+      display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 5px;
+      gap: 4px;
+      padding: 10px 8px;
     }
 
     .mobile-btn small {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--muted);
       letter-spacing: 0.14em;
     }
 
     .mobile-btn.ready {
-      background: linear-gradient(180deg, rgba(255, 199, 89, 0.22), rgba(255, 103, 186, 0.18));
-      box-shadow: 0 18px 46px rgba(255, 103, 186, 0.18);
+      border-color: rgba(255, 255, 255, 0.32);
     }
 
     .mobile-btn.disabled {
@@ -614,6 +694,24 @@
     }
 
     @media (max-width: 900px) {
+      .overlay {
+        align-items: stretch;
+        justify-content: stretch;
+        padding: 0;
+      }
+
+      .screen {
+        width: 100%;
+        min-height: 100%;
+        max-height: none;
+        overflow-y: auto;
+        padding:
+          calc(18px + env(safe-area-inset-top))
+          16px
+          calc(24px + env(safe-area-inset-bottom))
+          16px;
+      }
+
       .topbar,
       .bottombar,
       .menu-layout,
@@ -622,16 +720,36 @@
         grid-template-columns: 1fr;
       }
 
+      .button-row {
+        flex-direction: column;
+      }
+
+      .button-row .action {
+        width: 100%;
+      }
+
       .brand-panel,
       .stats-panel,
       .tips-panel,
       .upgrades-panel {
         min-height: 0;
       }
+
+      #settingsLauncher {
+        top: calc(12px + env(safe-area-inset-top)) !important;
+        right: calc(12px + env(safe-area-inset-right)) !important;
+      }
+
+      #leaderboardDock {
+        left: calc(12px + env(safe-area-inset-left)) !important;
+        right: calc(12px + env(safe-area-inset-right)) !important;
+        bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+        width: auto !important;
+      }
     }
 
     @media (pointer: coarse) {
-      .mobile-btn {
+      .mobile-actions {
         display: flex;
       }
 
@@ -728,6 +846,9 @@
       color: #ff6868 !important;
     }
 
+    .mobile-zone::before,
+    .mobile-stick,
+    .mobile-knob,
     .mobile-btn.ready,
     .mobile-btn.disabled {
       background: #0a0d14 !important;
@@ -800,6 +921,31 @@
     body[data-scene="running"] .meter {
       height: 10px;
     }
+
+    @media (max-width: 900px) {
+      body[data-scene="running"] .topbar {
+        left: 12px;
+        right: 12px;
+        width: auto;
+      }
+
+      body[data-scene="running"] .stats-panel {
+        padding: 10px 10px 8px;
+      }
+
+      body[data-scene="running"] .stats-grid {
+        gap: 8px;
+      }
+
+      body[data-scene="running"] .metric-value {
+        font-size: 18px;
+      }
+
+      body[data-scene="running"] .metric-label,
+      body[data-scene="running"] .bar-caption {
+        font-size: 10px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -861,8 +1007,8 @@
     <div class="bottombar">
       <section class="panel tips-panel">
         <div class="eyebrow">Controls</div>
-        <div class="tips-line"><strong>Move:</strong> `WASD` or drag/touch toward danger.</div>
-        <div class="tips-line"><strong>Aim & fire:</strong> mouse hold, `Space`, or keep a touch down.</div>
+        <div class="tips-line"><strong>Move:</strong> `WASD` or the left thumb zone.</div>
+        <div class="tips-line"><strong>Aim & fire:</strong> mouse hold, `Space`, or the right thumb zone.</div>
         <div class="tips-line"><strong>Dash:</strong> `Shift` for invulnerable burst repositioning.</div>
         <div class="tips-line"><strong>Overdrive:</strong> `Q` when the reactor is charged.</div>
         <div class="tips-line"><strong>Secret:</strong> type <strong>DISCO</strong> when you want the room to lose composure.</div>
@@ -975,14 +1121,28 @@
   <div id="toastStack"></div>
 
   <div class="mobile-actions">
-    <button class="mobile-btn" id="dashBtn">
-      Dash
-      <small id="dashBtnText">Ready</small>
-    </button>
-    <button class="mobile-btn" id="overdriveBtn">
-      Drive
-      <small id="overdriveBtnText">Charge</small>
-    </button>
+    <div class="mobile-zone mobile-zone-left" id="mobileMoveZone">
+      <div class="mobile-zone-label">Move</div>
+      <div class="mobile-stick" id="mobileMoveStick">
+        <div class="mobile-knob" id="mobileMoveKnob"></div>
+      </div>
+    </div>
+    <div class="mobile-cluster">
+      <button class="mobile-btn" id="dashBtn">
+        Dash
+        <small id="dashBtnText">Ready</small>
+      </button>
+      <button class="mobile-btn" id="overdriveBtn">
+        Drive
+        <small id="overdriveBtnText">Charge</small>
+      </button>
+    </div>
+    <div class="mobile-zone mobile-zone-right" id="mobileAimZone">
+      <div class="mobile-zone-label">Aim / Fire</div>
+      <div class="mobile-stick" id="mobileAimStick">
+        <div class="mobile-knob" id="mobileAimKnob"></div>
+      </div>
+    </div>
   </div>
 
   <button class="action secondary" id="settingsLauncher" style="position: fixed; top: 12px; right: 12px; z-index: 30; pointer-events: auto;">Settings</button>
@@ -1080,6 +1240,12 @@
       leaderboardList: document.getElementById("leaderboardList"),
       leaderboardRefreshBtn: document.getElementById("leaderboardRefreshBtn"),
       playerNameInput: document.getElementById("playerNameInput"),
+      mobileMoveZone: document.getElementById("mobileMoveZone"),
+      mobileMoveStick: document.getElementById("mobileMoveStick"),
+      mobileMoveKnob: document.getElementById("mobileMoveKnob"),
+      mobileAimZone: document.getElementById("mobileAimZone"),
+      mobileAimStick: document.getElementById("mobileAimStick"),
+      mobileAimKnob: document.getElementById("mobileAimKnob"),
       flash: document.getElementById("waveFlash"),
       flashLead: document.getElementById("flashLead"),
       flashMain: document.getElementById("flashMain"),
@@ -1184,6 +1350,18 @@
         orbiter: 0,
         brute: 0,
         boss: 0
+      };
+    }
+
+    function createStickState() {
+      return {
+        active: false,
+        pointerId: null,
+        originX: 0,
+        originY: 0,
+        x: 0,
+        y: 0,
+        strength: 0
       };
     }
 
@@ -1354,6 +1532,11 @@
         down: false,
         active: false,
         touch: false
+      },
+      mobile: {
+        coarse: window.matchMedia ? window.matchMedia("(pointer: coarse)").matches : false,
+        move: createStickState(),
+        aim: createStickState()
       },
       keys: new Set(),
       stats: {
@@ -1646,6 +1829,7 @@
     }
 
     function resize() {
+      state.mobile.coarse = window.matchMedia ? window.matchMedia("(pointer: coarse)").matches : state.mobile.coarse;
       state.dpr = getQualityProfile().dpr;
       state.width = window.innerWidth;
       state.height = window.innerHeight;
@@ -2058,6 +2242,8 @@
       state.keys.clear();
       state.pointer.down = false;
       state.pointer.touch = false;
+      state.pointer.active = false;
+      resetMobileInputs();
       state.stats.kills = 0;
       state.stats.wavesCleared = 0;
       state.stats.longestCombo = 0;
@@ -2129,6 +2315,8 @@
       state.keys.clear();
       state.pointer.down = false;
       state.pointer.touch = false;
+      state.pointer.active = false;
+      resetMobileInputs();
       state.enemies.length = 0;
       state.enemyBullets.length = 0;
       state.bullets.length = 0;
@@ -2422,7 +2610,11 @@
       if (!player || state.phase !== "running") return;
 
       player.fireCooldown = Math.max(0, player.fireCooldown - dt);
-      const wantsFire = state.pointer.down || state.keys.has(" ") || state.keys.has("space");
+      const wantsFire =
+        state.pointer.down ||
+        state.keys.has(" ") ||
+        state.keys.has("space") ||
+        (state.mobile.aim.active && state.mobile.aim.strength > 0.18);
       if (!wantsFire || player.fireCooldown > 0) return;
 
       player.shotCounter += 1;
@@ -2458,6 +2650,10 @@
       if (state.keys.has("s") || state.keys.has("arrowdown")) dy += 1;
       if (state.keys.has("a") || state.keys.has("arrowleft")) dx -= 1;
       if (state.keys.has("d") || state.keys.has("arrowright")) dx += 1;
+      if (!dx && !dy && state.mobile.move.active && state.mobile.move.strength > 0.12) {
+        dx = state.mobile.move.x;
+        dy = state.mobile.move.y;
+      }
 
       if (!dx && !dy) {
         dx = Math.cos(player.angle);
@@ -2503,7 +2699,10 @@
       if (state.keys.has("a") || state.keys.has("arrowleft")) move.x -= 1;
       if (state.keys.has("d") || state.keys.has("arrowright")) move.x += 1;
 
-      if (state.pointer.touch && state.pointer.down) {
+      if (state.mobile.move.active && state.mobile.move.strength > 0.08) {
+        move.x = state.mobile.move.x;
+        move.y = state.mobile.move.y;
+      } else if (state.pointer.touch && state.pointer.down) {
         const tx = state.pointer.x - player.x;
         const ty = state.pointer.y - player.y;
         const dist = Math.hypot(tx, ty);
@@ -2514,6 +2713,7 @@
       }
 
       const moveMag = Math.hypot(move.x, move.y);
+      const moveStrength = Math.min(1, moveMag);
       if (moveMag > 0) {
         move.x /= moveMag;
         move.y /= moveMag;
@@ -2521,8 +2721,8 @@
 
       const accel = 1040 + player.thrust * 130 + (player.overdriveActive > 0 ? 380 : 0);
       const maxSpeed = 320 + player.thrust * 34 + (player.overdriveActive > 0 ? 120 : 0);
-      player.vx += move.x * accel * dt;
-      player.vy += move.y * accel * dt;
+      player.vx += move.x * accel * dt * moveStrength;
+      player.vy += move.y * accel * dt * moveStrength;
       player.vx *= 1 / (1 + dt * 4.6);
       player.vy *= 1 / (1 + dt * 4.6);
 
@@ -2551,9 +2751,15 @@
         player.vy *= -0.28;
       }
 
-      const target = state.pointer.active
-        ? state.pointer
-        : nearestEnemy(player.x, player.y, 500) || { x: player.x + Math.cos(player.angle), y: player.y + Math.sin(player.angle) };
+      const target =
+        state.mobile.aim.active && state.mobile.aim.strength > 0.08
+          ? {
+              x: player.x + state.mobile.aim.x * 220,
+              y: player.y + state.mobile.aim.y * 220
+            }
+          : state.pointer.active
+            ? state.pointer
+            : nearestEnemy(player.x, player.y, 500) || { x: player.x + Math.cos(player.angle), y: player.y + Math.sin(player.angle) };
       player.angle = lerpAngle(player.angle, angleTo(player, target), 0.14);
 
       const maxShield = getMaxShield(player);
@@ -3058,6 +3264,8 @@
       state.keys.clear();
       state.pointer.down = false;
       state.pointer.touch = false;
+      state.pointer.active = false;
+      resetMobileInputs();
       state.player = null;
       state.lastRunScrap = 0;
       showOverlay(ui.menu);
@@ -3490,6 +3698,15 @@
       };
     }
 
+    function relativePointerPosition(node, event) {
+      const pos = pointerPosition(event);
+      const rect = node.getBoundingClientRect();
+      return {
+        x: pos.x - rect.left,
+        y: pos.y - rect.top
+      };
+    }
+
     function clearUiFocus() {
       const active = document.activeElement;
       if (active && typeof active.blur === "function") {
@@ -3497,7 +3714,107 @@
       }
     }
 
+    function setMobileStickVisual(kind) {
+      const stick = state.mobile[kind];
+      const stickNode = kind === "move" ? ui.mobileMoveStick : ui.mobileAimStick;
+      const knobNode = kind === "move" ? ui.mobileMoveKnob : ui.mobileAimKnob;
+
+      if (!stick.active) {
+        stickNode.classList.remove("active");
+        knobNode.style.transform = "translate(0px, 0px)";
+        return;
+      }
+
+      stickNode.classList.add("active");
+      stickNode.style.left = stick.originX + "px";
+      stickNode.style.top = stick.originY + "px";
+      knobNode.style.transform = `translate(${Math.round(stick.x * 34)}px, ${Math.round(stick.y * 34)}px)`;
+    }
+
+    function resetMobileStick(kind) {
+      const stick = state.mobile[kind];
+      stick.active = false;
+      stick.pointerId = null;
+      stick.originX = 0;
+      stick.originY = 0;
+      stick.x = 0;
+      stick.y = 0;
+      stick.strength = 0;
+      setMobileStickVisual(kind);
+    }
+
+    function resetMobileInputs() {
+      resetMobileStick("move");
+      resetMobileStick("aim");
+    }
+
+    function updateMobileStick(kind, pos) {
+      const stick = state.mobile[kind];
+      const maxRadius = 62;
+      const dx = pos.x - stick.originX;
+      const dy = pos.y - stick.originY;
+      const distance = Math.hypot(dx, dy);
+      const magnitude = Math.min(1, distance / maxRadius);
+      stick.x = distance ? (dx / distance) * magnitude : 0;
+      stick.y = distance ? (dy / distance) * magnitude : 0;
+      stick.strength = magnitude;
+      setMobileStickVisual(kind);
+    }
+
+    function engageMobileStick(kind, event) {
+      if (!state.mobile.coarse || event.pointerType !== "touch" || state.phase !== "running") return;
+      const stick = state.mobile[kind];
+      if (stick.active) return;
+      const zone = kind === "move" ? ui.mobileMoveZone : ui.mobileAimZone;
+      const pos = relativePointerPosition(zone, event);
+
+      stick.active = true;
+      stick.pointerId = event.pointerId;
+      stick.originX = pos.x;
+      stick.originY = pos.y;
+      updateMobileStick(kind, pos);
+      clearUiFocus();
+
+      if (zone.setPointerCapture && typeof event.pointerId === "number") {
+        try {
+          zone.setPointerCapture(event.pointerId);
+        } catch (error) {
+          // Ignore pointer capture failures on unsupported environments.
+        }
+      }
+
+      event.preventDefault();
+    }
+
+    function moveMobileStick(kind, event) {
+      const stick = state.mobile[kind];
+      if (!stick.active || stick.pointerId !== event.pointerId) return;
+      const zone = kind === "move" ? ui.mobileMoveZone : ui.mobileAimZone;
+      updateMobileStick(kind, relativePointerPosition(zone, event));
+      event.preventDefault();
+    }
+
+    function releaseMobileStick(kind, event) {
+      const stick = state.mobile[kind];
+      if (!stick.active || stick.pointerId !== event.pointerId) return;
+
+      const zone = kind === "move" ? ui.mobileMoveZone : ui.mobileAimZone;
+      if (zone.releasePointerCapture && typeof event.pointerId === "number") {
+        try {
+          zone.releasePointerCapture(event.pointerId);
+        } catch (error) {
+          // Ignore pointer release failures on unsupported environments.
+        }
+      }
+
+      resetMobileStick(kind);
+      event.preventDefault();
+    }
+
     function handlePointerDown(event) {
+      if (state.mobile.coarse && event.pointerType === "touch") {
+        return;
+      }
       const pos = pointerPosition(event);
       state.pointer.x = pos.x;
       state.pointer.y = pos.y;
@@ -3516,6 +3833,9 @@
     }
 
     function handlePointerMove(event) {
+      if (state.mobile.coarse && event.pointerType === "touch") {
+        return;
+      }
       const pos = pointerPosition(event);
       state.pointer.x = pos.x;
       state.pointer.y = pos.y;
@@ -3528,6 +3848,9 @@
     }
 
     function handlePointerUp(event) {
+      if (state.mobile.coarse && event.pointerType === "touch") {
+        return;
+      }
       if (canvas.releasePointerCapture && typeof event.pointerId === "number") {
         try {
           canvas.releasePointerCapture(event.pointerId);
@@ -3537,6 +3860,7 @@
       }
       state.pointer.down = false;
       state.pointer.touch = false;
+      state.pointer.active = false;
     }
 
     function bootPulse() {
@@ -3597,12 +3921,25 @@
     window.addEventListener("blur", () => {
       state.keys.clear();
       state.pointer.down = false;
+      state.pointer.active = false;
+      state.pointer.touch = false;
+      resetMobileInputs();
     });
 
     canvas.addEventListener("pointerdown", handlePointerDown);
     canvas.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
     window.addEventListener("pointercancel", handlePointerUp);
+
+    ui.mobileMoveZone.addEventListener("pointerdown", (event) => engageMobileStick("move", event));
+    ui.mobileMoveZone.addEventListener("pointermove", (event) => moveMobileStick("move", event));
+    ui.mobileMoveZone.addEventListener("pointerup", (event) => releaseMobileStick("move", event));
+    ui.mobileMoveZone.addEventListener("pointercancel", (event) => releaseMobileStick("move", event));
+
+    ui.mobileAimZone.addEventListener("pointerdown", (event) => engageMobileStick("aim", event));
+    ui.mobileAimZone.addEventListener("pointermove", (event) => moveMobileStick("aim", event));
+    ui.mobileAimZone.addEventListener("pointerup", (event) => releaseMobileStick("aim", event));
+    ui.mobileAimZone.addEventListener("pointercancel", (event) => releaseMobileStick("aim", event));
 
     ui.startBtn.addEventListener("click", () => {
       audio.ensure();
