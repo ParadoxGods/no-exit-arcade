@@ -91,6 +91,22 @@
       backdrop-filter: blur(18px);
     }
 
+    .utility-rail {
+      position: fixed;
+      top: clamp(12px, 2vw, 20px);
+      right: clamp(12px, 2vw, 20px);
+      display: flex;
+      gap: 10px;
+      z-index: 30;
+      pointer-events: auto;
+    }
+
+    .utility-btn {
+      min-width: 132px;
+      min-height: 52px;
+      padding: 12px 16px;
+    }
+
     .topbar,
     .bottombar {
       position: absolute;
@@ -213,6 +229,10 @@
       gap: 10px;
     }
 
+    .bar-stack.primary {
+      margin-top: 14px;
+    }
+
     .bar-caption {
       display: flex;
       justify-content: space-between;
@@ -260,21 +280,23 @@
       align-items: center;
       justify-content: center;
       padding: clamp(16px, 3vw, 28px);
-      background: linear-gradient(180deg, rgba(3, 5, 11, 0.36), rgba(3, 5, 11, 0.68));
+      background: rgba(3, 5, 11, 0.78);
       transition: opacity 0.28s ease, visibility 0.28s ease;
+      pointer-events: auto;
     }
 
     .overlay.hidden {
       opacity: 0;
       visibility: hidden;
+      pointer-events: none;
     }
 
     .screen {
-      width: min(980px, 100%);
-      padding: clamp(18px, 3vw, 32px);
-      background:
-        linear-gradient(160deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
-        var(--panel-strong);
+      width: min(880px, 100%);
+      max-height: min(92vh, 940px);
+      overflow-y: auto;
+      padding: clamp(20px, 3vw, 30px);
+      background: var(--panel-strong);
       border: 1px solid var(--line);
       border-radius: 28px;
       box-shadow: 0 28px 90px rgba(0, 0, 0, 0.46);
@@ -284,8 +306,9 @@
 
     .menu-layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
-      gap: clamp(18px, 3vw, 32px);
+      grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
+      gap: 24px;
+      align-items: start;
     }
 
     .screen h1,
@@ -298,19 +321,19 @@
     }
 
     .screen h1 {
-      font-size: clamp(42px, 8vw, 90px);
+      font-size: clamp(38px, 7vw, 74px);
     }
 
     .screen h2 {
-      font-size: clamp(28px, 4vw, 50px);
+      font-size: clamp(26px, 4vw, 42px);
     }
 
     .lede {
-      margin: 14px 0 0;
-      max-width: 44rem;
+      margin: 10px 0 0;
+      max-width: 38rem;
       color: var(--ink);
-      font-size: clamp(16px, 2vw, 20px);
-      line-height: 1.5;
+      font-size: clamp(16px, 2vw, 18px);
+      line-height: 1.45;
     }
 
     .muted {
@@ -325,26 +348,26 @@
     .chips {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
       margin-top: 6px;
     }
 
     .chip {
-      padding: 8px 12px;
+      padding: 7px 10px;
       border-radius: 999px;
       border: 1px solid rgba(255, 255, 255, 0.12);
-      background: rgba(255, 255, 255, 0.04);
-      font-size: 12px;
-      letter-spacing: 0.14em;
+      background: rgba(255, 255, 255, 0.02);
+      font-size: 11px;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--ink);
+      color: var(--muted);
     }
 
     .menu-card {
-      padding: 18px;
+      padding: 16px;
       border-radius: 20px;
       border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(255, 255, 255, 0.035);
+      background: rgba(255, 255, 255, 0.02);
     }
 
     .menu-card + .menu-card {
@@ -370,16 +393,17 @@
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      margin-top: 10px;
+      margin-top: 14px;
     }
 
     .action {
       border: 0;
       border-radius: 999px;
+      min-height: 56px;
       padding: 14px 20px;
       font: inherit;
       font-weight: 700;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       color: #09111c;
       background: linear-gradient(90deg, var(--amber), #fff0b8);
@@ -409,15 +433,15 @@
 
     .cards {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
       margin-top: 22px;
     }
 
     .card {
       position: relative;
       overflow: hidden;
-      padding: 18px;
+      padding: 16px;
       border-radius: 22px;
       border: 1px solid rgba(255, 255, 255, 0.12);
       background:
@@ -425,6 +449,7 @@
         rgba(255, 255, 255, 0.03);
       cursor: pointer;
       transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+      text-align: left;
     }
 
     .card:hover,
@@ -464,7 +489,7 @@
       color: var(--muted);
       line-height: 1.45;
       font-size: 14px;
-      min-height: 64px;
+      min-height: 0;
     }
 
     .card-level {
@@ -693,6 +718,251 @@
       font-size: clamp(24px, 4vw, 36px);
     }
 
+    .utility-screen {
+      width: min(520px, 100%);
+    }
+
+    .leaderboard-list {
+      margin-top: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .leaderboard-status {
+      margin-top: 4px;
+    }
+
+    .screen-header {
+      display: grid;
+      gap: 8px;
+      max-width: 42rem;
+    }
+
+    .screen-body,
+    .stack-tight,
+    .field-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .screen-section,
+    .summary-item,
+    .leaderboard-entry {
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #0a0d14;
+    }
+
+    .screen-section-title {
+      margin: 0;
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--amber);
+    }
+
+    .screen-section-copy,
+    .helper {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .summary-label {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .summary-value {
+      font-family: Impact, "Arial Black", sans-serif;
+      font-size: clamp(22px, 4vw, 34px);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .summary-copy {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .info-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .info-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .info-line:first-child {
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .info-title {
+      font-size: 12px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .info-copy {
+      margin: 0;
+      max-width: 22rem;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+      text-align: right;
+    }
+
+    .screen-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .screen-actions .action {
+      min-width: 180px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .field-label {
+      color: var(--ink);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .control,
+    .control-select {
+      width: 100%;
+      min-height: 52px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: #0a0d14;
+      color: var(--ink);
+      font: inherit;
+    }
+
+    .control::placeholder {
+      color: rgba(246, 239, 207, 0.45);
+    }
+
+    .control-range {
+      width: 100%;
+      margin: 0;
+      accent-color: #f6efcf;
+    }
+
+    .control-range:disabled,
+    .control:disabled,
+    .control-select:disabled {
+      opacity: 0.45;
+    }
+
+    .toggle-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      min-height: 52px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #0a0d14;
+      color: var(--ink);
+    }
+
+    .toggle-row input {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+    }
+
+    .upgrade-card.disabled {
+      opacity: 0.5;
+    }
+
+    .leaderboard-entry {
+      display: grid;
+      gap: 8px;
+    }
+
+    .leaderboard-entry-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+    }
+
+    .leaderboard-rank {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--amber);
+    }
+
+    .leaderboard-player {
+      font-family: Impact, "Arial Black", sans-serif;
+      font-size: 22px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .leaderboard-score {
+      font-family: Impact, "Arial Black", sans-serif;
+      font-size: 26px;
+      letter-spacing: 0.06em;
+      color: var(--ink);
+    }
+
+    .leaderboard-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .inline-note {
+      margin-top: 4px;
+      font-size: 12px;
+    }
+
     @media (max-width: 900px) {
       .overlay {
         align-items: stretch;
@@ -716,16 +986,31 @@
       .bottombar,
       .menu-layout,
       .cards,
-      .results-grid {
+      .results-grid,
+      .summary-grid {
         grid-template-columns: 1fr;
+      }
+
+      .chips {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .button-row {
         flex-direction: column;
       }
 
+      .screen-actions {
+        flex-direction: column;
+      }
+
       .button-row .action {
         width: 100%;
+      }
+
+      .screen-actions .action {
+        width: 100%;
+        min-width: 0;
       }
 
       .brand-panel,
@@ -735,16 +1020,27 @@
         min-height: 0;
       }
 
-      #settingsLauncher {
-        top: calc(12px + env(safe-area-inset-top)) !important;
-        right: calc(12px + env(safe-area-inset-right)) !important;
+      .utility-rail {
+        left: calc(12px + env(safe-area-inset-left));
+        right: calc(12px + env(safe-area-inset-right));
+        top: calc(12px + env(safe-area-inset-top));
+        justify-content: stretch;
       }
 
-      #leaderboardDock {
-        left: calc(12px + env(safe-area-inset-left)) !important;
-        right: calc(12px + env(safe-area-inset-right)) !important;
-        bottom: calc(12px + env(safe-area-inset-bottom)) !important;
-        width: auto !important;
+      .utility-btn {
+        flex: 1 1 0;
+        min-width: 0;
+      }
+
+      .info-line,
+      .field-row {
+        display: grid;
+        gap: 6px;
+      }
+
+      .info-copy {
+        max-width: none;
+        text-align: left;
       }
     }
 
@@ -759,6 +1055,18 @@
 
       .brand-subtitle {
         font-size: 13px;
+      }
+    }
+
+    @media (pointer: coarse) and (orientation: portrait) {
+      .mobile-cluster {
+        flex-direction: row;
+        gap: 12px;
+      }
+
+      .mobile-btn {
+        width: min(28vw, 116px);
+        min-height: 70px;
       }
     }
 
@@ -860,8 +1168,14 @@
     }
 
     .hud,
+    .utility-rail,
     .mobile-actions {
       transition: opacity 0.16s ease, visibility 0.16s ease;
+    }
+
+    body[data-utility-open="true"] .utility-rail {
+      opacity: 0;
+      visibility: hidden;
     }
 
     body:not([data-scene="running"]) .hud {
@@ -874,8 +1188,7 @@
       visibility: hidden;
     }
 
-    body[data-scene="running"] #settingsLauncher,
-    body[data-scene="running"] #leaderboardDock {
+    body[data-scene="running"] .utility-rail {
       opacity: 0;
       visibility: hidden;
     }
@@ -972,7 +1285,7 @@
             <div class="metric-value" id="waveValue">0</div>
           </div>
         </div>
-        <div class="bar-stack" style="margin-top: 14px;">
+        <div class="bar-stack primary">
           <div>
             <div class="bar-caption">
               <span>Hull</span>
@@ -1032,39 +1345,79 @@
     <div class="screen">
       <div class="menu-layout">
         <div class="menu-copy">
-          <div class="eyebrow">Personal Amusement Protocol</div>
-          <h1>No Exit Arcade</h1>
-          <p class="lede">
-            If I’m locked in a room with one computer and nothing else to do, I’m not making a productivity app. I’m building a glowing machine that weaponizes boredom into score chains, synth pulses, and absurdly irresponsible particle effects.
-          </p>
-          <p class="muted">
-            The result is a single-file arcade toy with separate scenes: menu, hangar, arena, and post-run results. Gameplay stays uninterrupted once a run starts; upgrades happen before the next one.
-          </p>
-          <div class="chips">
-            <div class="chip">Arcade Loop</div>
-            <div class="chip">Hangar Upgrades</div>
-            <div class="chip">Procedural Audio</div>
-            <div class="chip">Hidden Codes</div>
-            <div class="chip">Touch Friendly</div>
+          <div class="screen-header">
+            <div class="eyebrow">Personal Amusement Protocol</div>
+            <h1>No Exit Arcade</h1>
+            <p class="lede">A one-file arcade run with a simple loop: tune the ship, enter the arena, survive, bank scrap, and push the board.</p>
+            <p class="muted">
+              This version keeps the game screen dominant. Setup, upgrades, settings, and leaderboard live in separate utility scenes so the run itself stays clean.
+            </p>
           </div>
-          <div class="button-row">
+          <div class="chips">
+            <div class="chip">Arena First</div>
+            <div class="chip">Persistent Loadout</div>
+            <div class="chip">Live Board</div>
+          </div>
+          <div class="screen-section">
+            <div class="screen-section-title">Run Structure</div>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <div class="summary-label">Step 1</div>
+                <div class="summary-value">Build</div>
+                <p class="summary-copy">Spend scrap in the hangar before the next run, not during combat.</p>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label">Step 2</div>
+                <div class="summary-value">Fight</div>
+                <p class="summary-copy">Clear waves, keep the combo alive, and survive every fourth-wave boss.</p>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label">Step 3</div>
+                <div class="summary-value">Submit</div>
+                <p class="summary-copy">Post a validated score to the public leaderboard when the run is over.</p>
+              </div>
+            </div>
+          </div>
+          <div class="screen-actions">
             <button class="action" id="startBtn">Open Hangar</button>
             <button class="action secondary" id="menuPulseBtn">Quick Start</button>
           </div>
         </div>
 
-        <div>
-          <div class="menu-card">
-            <div class="menu-card-title">Mission</div>
-            <p>Stay alive, keep the combo meter fed, and let the arena run without stopping. Bosses arrive every fourth wave and have no respect for your personal space.</p>
+        <div class="stack-tight">
+          <div class="screen-section">
+            <div class="screen-section-title">Controls</div>
+            <div class="info-list">
+              <div class="info-line">
+                <div class="info-title">Move</div>
+                <p class="info-copy">`WASD` or the left thumb zone.</p>
+              </div>
+              <div class="info-line">
+                <div class="info-title">Aim And Fire</div>
+                <p class="info-copy">Mouse hold, `Space`, or the right thumb zone.</p>
+              </div>
+              <div class="info-line">
+                <div class="info-title">Abilities</div>
+                <p class="info-copy">`Shift` to dash and `Q` to trigger overdrive.</p>
+              </div>
+            </div>
           </div>
-          <div class="menu-card">
-            <div class="menu-card-title">Why This Exists</div>
-            <p>Because an empty room with broadband is just a challenge to invent your own carnival. This one only needs a browser.</p>
-          </div>
-          <div class="menu-card">
-            <div class="menu-card-title">Small Advice</div>
-            <p>Use dash aggressively. Pick upgrades that commit to a direction instead of dabbling. When overdrive lights up, spend it immediately and enjoy the consequences.</p>
+          <div class="screen-section">
+            <div class="screen-section-title">Approach</div>
+            <div class="info-list">
+              <div class="info-line">
+                <div class="info-title">Commit</div>
+                <p class="info-copy">Stack upgrades in one direction instead of spreading scrap thin.</p>
+              </div>
+              <div class="info-line">
+                <div class="info-title">Tempo</div>
+                <p class="info-copy">Dash early, keep lanes open, and cash in overdrive as soon as it is ready.</p>
+              </div>
+              <div class="info-line">
+                <div class="info-title">Hidden Code</div>
+                <p class="info-copy">Type `DISCO` if the room starts feeling too stable.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1073,13 +1426,30 @@
 
   <div class="overlay hidden" id="upgradeScreen">
     <div class="screen">
-      <div class="eyebrow">Hangar</div>
-      <h2>Tune The Machine</h2>
-      <p class="muted" id="upgradeCopy">Spend scrap between runs if you want to. The arena waits.</p>
-      <div class="metric-label" style="margin-top: 16px;">Scrap Bank</div>
-      <div class="metric-value" id="hangarCredits">0</div>
+      <div class="screen-header">
+        <div class="eyebrow">Hangar</div>
+        <h2>Tune The Machine</h2>
+        <p class="muted" id="upgradeCopy">Spend scrap between runs if you want to. The arena waits.</p>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <div class="summary-label">Scrap Bank</div>
+          <div class="summary-value" id="hangarCredits">0</div>
+          <p class="summary-copy">Every upgrade here persists into the next run.</p>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Loadout Rule</div>
+          <div class="summary-value">Focus</div>
+          <p class="summary-copy">Choose a lane and keep stacking it. Mixed builds are weaker early.</p>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Run Flow</div>
+          <div class="summary-value">Clean</div>
+          <p class="summary-copy">Combat starts only after you leave the hangar, so there is no mid-run shopping noise.</p>
+        </div>
+      </div>
       <div class="cards" id="upgradeCards"></div>
-      <div class="button-row" style="margin-top: 20px;">
+      <div class="screen-actions">
         <button class="action" id="hangarStartBtn">Start Run</button>
         <button class="action secondary" id="hangarMenuBtn">Back To Menu</button>
       </div>
@@ -1088,9 +1458,11 @@
 
   <div class="overlay hidden" id="gameOver">
     <div class="screen">
-      <div class="eyebrow">Reactor Venting</div>
-      <h2>Fun Was Achieved</h2>
-      <p class="muted" id="resultsCopy">You eventually exploded, which in this particular room counts as a productive evening.</p>
+      <div class="screen-header">
+        <div class="eyebrow">Reactor Venting</div>
+        <h2>Fun Was Achieved</h2>
+        <p class="muted" id="resultsCopy">You eventually exploded, which in this particular room counts as a productive evening.</p>
+      </div>
       <div class="results-grid">
         <div class="result">
           <div class="metric-label">Final Score</div>
@@ -1109,7 +1481,11 @@
           <div class="metric-value" id="finalKills">0</div>
         </div>
       </div>
-      <div class="button-row" style="margin-top: 20px;">
+      <div class="screen-section">
+        <div class="screen-section-title">Next Step</div>
+        <p class="screen-section-copy">Run it back immediately, publish the score, or return to the hangar to retune the build.</p>
+      </div>
+      <div class="screen-actions">
         <button class="action" id="restartBtn">Run It Back</button>
         <button class="action secondary" id="submitScoreBtn">Submit Score</button>
         <button class="action secondary" id="hangarBtn">Open Hangar</button>
@@ -1145,51 +1521,90 @@
     </div>
   </div>
 
-  <button class="action secondary" id="settingsLauncher" style="position: fixed; top: 12px; right: 12px; z-index: 30; pointer-events: auto;">Settings</button>
+  <div class="utility-rail">
+    <button class="action secondary utility-btn" id="leaderboardLauncher">Leaderboard</button>
+    <button class="action secondary utility-btn" id="settingsLauncher">Settings</button>
+  </div>
 
-  <aside class="panel" id="leaderboardDock" style="position: fixed; right: 12px; bottom: 12px; width: min(340px, calc(100vw - 24px)); z-index: 20; padding: 12px; pointer-events: auto;">
-    <div class="eyebrow">Live Leaderboard</div>
-    <div class="button-row" style="margin-top: 0; margin-bottom: 10px;">
-      <button class="action secondary" id="leaderboardRefreshBtn">Refresh</button>
+  <div class="overlay hidden" id="leaderboardDock">
+    <div class="screen utility-screen">
+      <div class="screen-header">
+        <div class="eyebrow">Live Leaderboard</div>
+        <h2>Top Runs</h2>
+        <p class="muted">Public scores land here from the GitHub Pages feed after issue validation and moderation.</p>
+      </div>
+      <div class="screen-actions">
+        <button class="action secondary" id="leaderboardRefreshBtn">Refresh</button>
+        <button class="action" id="leaderboardCloseBtn">Close</button>
+      </div>
+      <div class="muted leaderboard-status" id="leaderboardStatus">Waiting for scores.</div>
+      <div class="leaderboard-list" id="leaderboardList"></div>
+      <div class="helper inline-note">Sign in to GitHub to publish a score.</div>
     </div>
-    <div class="muted" id="leaderboardStatus">Waiting for scores.</div>
-    <div id="leaderboardList" style="margin-top: 10px;"></div>
-    <div class="muted" style="margin-top: 10px; font-size: 12px;">Public scores use GitHub issues. Sign in to GitHub to submit.</div>
-  </aside>
+  </div>
 
   <div class="overlay hidden" id="settingsScreen">
-    <div class="screen">
-      <div class="eyebrow">Settings</div>
-      <h2>Dial It In</h2>
-      <div class="menu-card" style="margin-top: 18px;">
-        <div class="menu-card-title">Leaderboard</div>
-        <label class="muted" for="playerNameInput">Public pilot name</label>
-        <input id="playerNameInput" type="text" maxlength="20" placeholder="Pilot" style="display:block; width:100%; margin-top:8px; padding:10px; background:#0a0d14; color:#f6efcf; border:1px solid rgba(255,255,255,0.18);">
-        <div class="muted" style="margin-top: 8px;">Used for GitHub score submissions.</div>
+    <div class="screen utility-screen">
+      <div class="screen-header">
+        <div class="eyebrow">Settings</div>
+        <h2>Dial It In</h2>
+        <p class="muted">Keep the utility layer small: identity, visual load, and audio balance.</p>
       </div>
-      <div class="menu-card" style="margin-top: 18px;">
-        <div class="menu-card-title">Quality</div>
-        <label class="muted" for="qualitySelect">Rendering quality</label>
-        <select id="qualitySelect" style="display:block; width:100%; margin-top:8px; padding:10px; background:#0a0d14; color:#f6efcf; border:1px solid rgba(255,255,255,0.18);">
+      <div class="field-grid">
+        <div class="screen-section">
+          <div class="screen-section-title">Leaderboard</div>
+          <label class="field" for="playerNameInput">
+            <div class="field-row">
+              <span class="field-label">Public Pilot Name</span>
+              <span class="helper">Used in GitHub score submissions.</span>
+            </div>
+            <input class="control" id="playerNameInput" type="text" maxlength="20" placeholder="Pilot">
+          </label>
+        </div>
+        <div class="screen-section">
+          <div class="screen-section-title">Quality</div>
+          <label class="field" for="qualitySelect">
+            <div class="field-row">
+              <span class="field-label">Rendering Quality</span>
+              <span class="helper">Lower settings reduce particle load.</span>
+            </div>
+            <select class="control-select" id="qualitySelect">
           <option value="low">Low</option>
           <option value="medium">Medium</option>
           <option value="high">High</option>
-        </select>
+            </select>
+          </label>
+        </div>
+        <div class="screen-section">
+          <div class="screen-section-title">Audio</div>
+          <div class="field">
+            <div class="field-row">
+              <label class="field-label" for="masterVolume">Master Volume</label>
+              <span class="helper" id="masterVolumeValue">0%</span>
+            </div>
+            <input class="control-range" id="masterVolume" type="range" min="0" max="100" step="1">
+          </div>
+          <div class="field">
+            <div class="field-row">
+              <label class="field-label" for="musicVolume">Music Volume</label>
+              <span class="helper" id="musicVolumeValue">0%</span>
+            </div>
+            <input class="control-range" id="musicVolume" type="range" min="0" max="100" step="1">
+          </div>
+          <div class="field">
+            <div class="field-row">
+              <label class="field-label" for="sfxVolume">SFX Volume</label>
+              <span class="helper" id="sfxVolumeValue">0%</span>
+            </div>
+            <input class="control-range" id="sfxVolume" type="range" min="0" max="100" step="1">
+          </div>
+          <label class="toggle-row" for="sfxEnabled">
+            <input id="sfxEnabled" type="checkbox">
+            <span class="field-label">Enable Sound Effects</span>
+          </label>
+        </div>
       </div>
-      <div class="menu-card">
-        <div class="menu-card-title">Audio</div>
-        <label class="muted" for="masterVolume">Master volume</label>
-        <input id="masterVolume" type="range" min="0" max="100" step="1" style="width:100%; margin:8px 0 14px;">
-        <label class="muted" for="musicVolume">Music volume</label>
-        <input id="musicVolume" type="range" min="0" max="100" step="1" style="width:100%; margin:8px 0 14px;">
-        <label class="muted" for="sfxVolume">SFX volume</label>
-        <input id="sfxVolume" type="range" min="0" max="100" step="1" style="width:100%; margin:8px 0 14px;">
-        <label class="muted" style="display:flex; align-items:center; gap:10px;">
-          <input id="sfxEnabled" type="checkbox">
-          Enable sound effects
-        </label>
-      </div>
-      <div class="button-row">
+      <div class="screen-actions">
         <button class="action" id="settingsCloseBtn">Close Settings</button>
       </div>
     </div>
@@ -1227,18 +1642,23 @@
       hangarStartBtn: document.getElementById("hangarStartBtn"),
       hangarMenuBtn: document.getElementById("hangarMenuBtn"),
       hangarBtn: document.getElementById("hangarBtn"),
+      leaderboardLauncher: document.getElementById("leaderboardLauncher"),
       settingsLauncher: document.getElementById("settingsLauncher"),
       settingsScreen: document.getElementById("settingsScreen"),
       settingsCloseBtn: document.getElementById("settingsCloseBtn"),
       qualitySelect: document.getElementById("qualitySelect"),
       masterVolume: document.getElementById("masterVolume"),
+      masterVolumeValue: document.getElementById("masterVolumeValue"),
       musicVolume: document.getElementById("musicVolume"),
+      musicVolumeValue: document.getElementById("musicVolumeValue"),
       sfxVolume: document.getElementById("sfxVolume"),
+      sfxVolumeValue: document.getElementById("sfxVolumeValue"),
       sfxEnabled: document.getElementById("sfxEnabled"),
       leaderboardDock: document.getElementById("leaderboardDock"),
       leaderboardStatus: document.getElementById("leaderboardStatus"),
       leaderboardList: document.getElementById("leaderboardList"),
       leaderboardRefreshBtn: document.getElementById("leaderboardRefreshBtn"),
+      leaderboardCloseBtn: document.getElementById("leaderboardCloseBtn"),
       playerNameInput: document.getElementById("playerNameInput"),
       mobileMoveZone: document.getElementById("mobileMoveZone"),
       mobileMoveStick: document.getElementById("mobileMoveStick"),
@@ -1882,6 +2302,13 @@
       node.classList.add("hidden");
     }
 
+    function syncUtilityRail() {
+      const utilityOpen =
+        !ui.settingsScreen.classList.contains("hidden") ||
+        !ui.leaderboardDock.classList.contains("hidden");
+      document.body.dataset.utilityOpen = utilityOpen ? "true" : "false";
+    }
+
     function syncSceneUi() {
       document.body.dataset.scene = state.phase;
     }
@@ -1915,8 +2342,12 @@
       ui.playerNameInput.value = state.playerName;
       ui.qualitySelect.value = state.settings.quality;
       ui.masterVolume.value = state.settings.masterVolume;
+      ui.masterVolumeValue.textContent = state.settings.masterVolume + "%";
       ui.musicVolume.value = state.settings.musicVolume;
+      ui.musicVolumeValue.textContent = state.settings.musicVolume + "%";
       ui.sfxVolume.value = state.settings.sfxVolume;
+      ui.sfxVolumeValue.textContent = state.settings.sfxEnabled ? state.settings.sfxVolume + "%" : "Muted";
+      ui.sfxVolume.disabled = !state.settings.sfxEnabled;
       ui.sfxEnabled.checked = state.settings.sfxEnabled;
     }
 
@@ -1941,12 +2372,27 @@
     }
 
     function openSettings() {
+      closeLeaderboard();
       renderSettingsUi();
       showOverlay(ui.settingsScreen);
+      syncUtilityRail();
     }
 
     function closeSettings() {
       hideOverlay(ui.settingsScreen);
+      syncUtilityRail();
+    }
+
+    function openLeaderboard() {
+      closeSettings();
+      fetchLeaderboard(true);
+      showOverlay(ui.leaderboardDock);
+      syncUtilityRail();
+    }
+
+    function closeLeaderboard() {
+      hideOverlay(ui.leaderboardDock);
+      syncUtilityRail();
     }
 
     function sanitizePlayerName(name) {
@@ -2050,12 +2496,14 @@
         waves: Number(line("waves")) || 0,
         kills: Number(line("kills")) || 0,
         combo: Number(line("combo")) || 0,
+        scrap: Number(line("scrap")) || 0,
+        build: String(line("build") || "Base").slice(0, 120),
         url: issue.html_url,
         createdAt: issue.created_at
       };
     }
 
-    function renderLeaderboard() {
+    function legacyRenderLeaderboard() {
       const { entries, loading, lastUpdated } = state.leaderboard;
       if (loading) {
         ui.leaderboardStatus.textContent = "Refreshing leaderboard...";
@@ -2078,11 +2526,11 @@
         .join("");
     }
 
-    async function fetchLeaderboard(force = false) {
+    async function legacyFetchLeaderboardV1(force = false) {
       const now = Date.now();
       if (state.leaderboard.loading) return;
       if (!force && now - state.leaderboard.lastFetchAt < 60000) {
-        renderLeaderboard();
+        legacyRenderLeaderboard();
         return;
       }
 
@@ -2117,7 +2565,7 @@
       }
     }
 
-    function submitScoreToLeaderboard() {
+    function legacySubmitScoreToLeaderboardV1() {
       const chosen = window.prompt("Public leaderboard name:", state.playerName || "Pilot");
       if (chosen === null) return;
       savePlayerName(chosen);
@@ -2138,13 +2586,29 @@
       }
 
       if (!entries.length) {
-        ui.leaderboardList.innerHTML = "<div class='upgrade-line'><strong>No public scores yet</strong><span>Be first</span></div>";
+        ui.leaderboardList.innerHTML = "<div class='screen-section'><div class='screen-section-title'>No Public Scores Yet</div><p class='screen-section-copy'>Be the first run on the board.</p></div>";
         return;
       }
 
       ui.leaderboardList.innerHTML = entries
         .map((entry, index) => {
-          return `<div class="upgrade-line"><strong>${index + 1}. ${escapeHtml(entry.player)}</strong><span>${padScore(entry.score)}</span></div><div class="tips-line">Wave ${padScore(entry.waves)} | Kills ${padScore(entry.kills)} | Combo ${padScore(entry.combo)}</div>`;
+          const build = entry.build ? `<p class="helper">${escapeHtml(entry.build)}</p>` : "";
+          return `
+            <div class="leaderboard-entry">
+              <div class="leaderboard-entry-top">
+                <span class="leaderboard-rank">#${index + 1}</span>
+                <span class="leaderboard-score">${padScore(entry.score)}</span>
+              </div>
+              <div class="leaderboard-player">${escapeHtml(entry.player)}</div>
+              <div class="leaderboard-meta">
+                <span>Wave ${padScore(entry.waves)}</span>
+                <span>Kills ${padScore(entry.kills)}</span>
+                <span>Combo ${padScore(entry.combo)}</span>
+                <span>Scrap ${padScore(entry.scrap || 0)}</span>
+              </div>
+              ${build}
+            </div>
+          `;
         })
         .join("");
     }
@@ -2219,6 +2683,7 @@
     function resetRun() {
       state.phase = "running";
       syncSceneUi();
+      closeLeaderboard();
       closeSettings();
       state.score = 0;
       state.combo = 0;
@@ -2307,6 +2772,7 @@
     function openHangar() {
       state.phase = "hangar";
       syncSceneUi();
+      closeLeaderboard();
       closeSettings();
       state.score = 0;
       state.wave = 0;
@@ -2342,15 +2808,14 @@
         const isMaxed = level >= upgrade.max;
         const affordable = state.meta.scrap >= cost;
         const button = document.createElement("button");
-        button.className = "card";
+        button.className = "card upgrade-card" + (isMaxed || !affordable ? " disabled" : "");
         button.style.setProperty("--card-color", upgrade.color);
         button.disabled = isMaxed || !affordable;
-        button.style.opacity = button.disabled ? "0.55" : "1";
         button.innerHTML = `
           <div class="card-tag">${upgrade.tag}</div>
           <div class="card-title">${upgrade.title}</div>
           <div class="card-text">${upgrade.desc}</div>
-          <div class="card-level">${isMaxed ? "Maxed" : "Cost " + cost + " Scrap"} · Current ${formatLevel(level)} / Max ${upgrade.max}</div>
+          <div class="card-level">${isMaxed ? "Maxed" : "Cost " + cost + " Scrap"} | Current ${formatLevel(level)} / Max ${upgrade.max}</div>
         `;
         button.addEventListener("click", () => buyUpgrade(upgrade.id));
         ui.upgradeCards.appendChild(button);
@@ -3227,6 +3692,7 @@
     function endRun() {
       state.phase = "gameover";
       syncSceneUi();
+      closeLeaderboard();
       closeSettings();
       state.lastRunScrap = Math.max(
         1,
@@ -3251,6 +3717,7 @@
     function backToMenu() {
       state.phase = "menu";
       syncSceneUi();
+      closeLeaderboard();
       closeSettings();
       state.score = 0;
       state.wave = 0;
@@ -3915,6 +4382,7 @@
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         closeSettings();
+        closeLeaderboard();
       }
     });
 
@@ -3987,14 +4455,30 @@
       submitScoreToLeaderboard();
     });
 
+    ui.leaderboardLauncher.addEventListener("click", () => {
+      clearUiFocus();
+      openLeaderboard();
+    });
+
     ui.settingsLauncher.addEventListener("click", () => {
       clearUiFocus();
       openSettings();
     });
 
+    ui.leaderboardCloseBtn.addEventListener("click", () => {
+      clearUiFocus();
+      closeLeaderboard();
+    });
+
     ui.settingsCloseBtn.addEventListener("click", () => {
       clearUiFocus();
       closeSettings();
+    });
+
+    ui.leaderboardDock.addEventListener("click", (event) => {
+      if (event.target === ui.leaderboardDock) {
+        closeLeaderboard();
+      }
     });
 
     ui.settingsScreen.addEventListener("click", (event) => {
@@ -4049,6 +4533,7 @@
 
     resize();
     syncSceneUi();
+    syncUtilityRail();
     applySettings();
     refreshHud(true);
     fetchLeaderboard(true);
