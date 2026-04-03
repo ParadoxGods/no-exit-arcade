@@ -6,18 +6,22 @@
   <title>No Exit Arcade</title>
   <style>
     :root {
-      --bg: #060912;
-      --bg-deep: #03050b;
-      --ink: #f6efcf;
-      --muted: #9ba2c7;
-      --cyan: #74f5ff;
-      --pink: #ff67ba;
-      --amber: #ffc759;
-      --lime: #8aff8f;
-      --danger: #ff6868;
-      --line: rgba(255, 255, 255, 0.12);
-      --panel: rgba(10, 14, 27, 0.7);
-      --panel-strong: rgba(11, 15, 30, 0.9);
+      --bg: #0d1524;
+      --bg-deep: #09111d;
+      --ink: #f5f7ff;
+      --muted: #c7d1e3;
+      --cyan: #7fdcff;
+      --pink: #ff8bc8;
+      --amber: #ffd46d;
+      --lime: #a8f29d;
+      --danger: #ff8f8f;
+      --line: rgba(157, 176, 204, 0.34);
+      --line-soft: rgba(157, 176, 204, 0.18);
+      --panel: #172338;
+      --panel-strong: #1b2a42;
+      --surface: #22324d;
+      --surface-alt: #172338;
+      --surface-quiet: #101929;
       --shadow: 0 18px 60px rgba(0, 0, 0, 0.42);
       --font-ui: "Aptos", "Segoe UI Variable Text", "Segoe UI", "Candara", "Helvetica Neue", sans-serif;
       --font-display: "Aptos Display", "Segoe UI Variable Display", "Segoe UI", "Candara", "Helvetica Neue", sans-serif;
@@ -35,11 +39,7 @@
       height: 100%;
       margin: 0;
       overflow: hidden;
-      background:
-        radial-gradient(circle at 20% 20%, rgba(116, 245, 255, 0.12), transparent 34%),
-        radial-gradient(circle at 80% 18%, rgba(255, 103, 186, 0.11), transparent 30%),
-        radial-gradient(circle at 50% 95%, rgba(255, 199, 89, 0.12), transparent 35%),
-        linear-gradient(180deg, var(--bg), var(--bg-deep));
+      background: var(--bg);
       color: var(--ink);
       font-family: var(--font-ui);
       touch-action: none;
@@ -190,8 +190,8 @@
 
     .status-chip {
       padding: 8px 10px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--line-soft);
+      background: var(--surface-quiet);
     }
 
     .status-label {
@@ -250,8 +250,8 @@
       height: 12px;
       overflow: hidden;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--surface-quiet);
+      border: 1px solid var(--line-soft);
     }
 
     .meter-fill {
@@ -334,7 +334,7 @@
       align-items: center;
       justify-content: center;
       padding: clamp(16px, 3vw, 28px);
-      background: rgba(3, 5, 11, 0.78);
+      background: rgba(7, 11, 18, 0.78);
       transition: opacity 0.28s ease, visibility 0.28s ease;
       pointer-events: auto;
     }
@@ -353,9 +353,13 @@
       background: var(--panel-strong);
       border: 1px solid var(--line);
       border-radius: 28px;
-      box-shadow: 0 28px 90px rgba(0, 0, 0, 0.46);
+      box-shadow: 0 28px 90px rgba(0, 0, 0, 0.22);
       backdrop-filter: blur(18px);
       pointer-events: auto;
+    }
+
+    .hangar-screen {
+      width: min(1080px, 100%);
     }
 
     .menu-layout {
@@ -410,19 +414,19 @@
     .chip {
       padding: 7px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--line-soft);
+      background: var(--surface);
       font-size: 11px;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--muted);
+      color: var(--ink);
     }
 
     .menu-card {
       padding: 16px;
       border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--line);
+      background: var(--surface);
     }
 
     .menu-card + .menu-card {
@@ -457,8 +461,8 @@
 
     .menu-kpi {
       padding: 14px 16px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: #0a0d14;
+      border: 1px solid var(--line);
+      background: var(--surface);
     }
 
     .menu-kpi-label {
@@ -538,20 +542,20 @@
       padding: 14px 20px;
       font: inherit;
       font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #09111c;
-      background: linear-gradient(90deg, var(--amber), #fff0b8);
-      box-shadow: 0 14px 34px rgba(255, 199, 89, 0.32);
+      letter-spacing: 0.04em;
+      text-transform: none;
+      color: #0d1524;
+      background: var(--amber);
+      box-shadow: none;
       cursor: pointer;
       transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
     }
 
     .action.secondary {
       color: var(--ink);
-      background: linear-gradient(90deg, rgba(116, 245, 255, 0.18), rgba(255, 103, 186, 0.2));
+      background: var(--surface);
       box-shadow: none;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 1px solid var(--line);
     }
 
     .action:hover,
@@ -569,19 +573,17 @@
     .cards {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
+      gap: 12px;
       margin-top: 14px;
     }
 
     .card {
       position: relative;
       overflow: hidden;
-      padding: 12px;
+      padding: 14px;
       border-radius: 22px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
-        rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--line);
+      background: var(--surface-quiet);
       cursor: pointer;
       transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
       text-align: left;
@@ -589,9 +591,9 @@
 
     .card:hover,
     .card:focus-visible {
-      transform: translateY(-4px);
+      transform: translateY(-2px);
       border-color: rgba(255, 255, 255, 0.28);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.34);
+      box-shadow: none;
       outline: none;
     }
 
@@ -617,14 +619,14 @@
       font-family: var(--font-display);
       font-weight: 700;
       text-transform: none;
-      font-size: 20px;
+      font-size: 18px;
       letter-spacing: 0.01em;
     }
 
     .card-text {
       color: var(--muted);
       line-height: 1.4;
-      font-size: 12px;
+      font-size: 13px;
       min-height: 0;
     }
 
@@ -638,7 +640,7 @@
 
     .compact-card {
       display: grid;
-      gap: 8px;
+      gap: 10px;
       align-content: start;
       min-height: 0;
     }
@@ -647,18 +649,19 @@
     .compact-card-bottom {
       display: flex;
       justify-content: space-between;
-      gap: 8px;
-      align-items: baseline;
+      gap: 12px;
+      align-items: flex-start;
     }
 
     .compact-card-bottom {
       align-items: center;
+      flex-wrap: wrap;
     }
 
     .compact-card-status {
-      color: var(--ink);
+      color: var(--amber);
       font-size: 11px;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       text-align: right;
     }
@@ -667,41 +670,43 @@
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
+      flex: 1 1 auto;
     }
 
     .compact-card-pill {
-      padding: 4px 6px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--muted);
+      padding: 4px 7px;
+      border: 1px solid var(--line-soft);
+      color: var(--ink);
       font-size: 10px;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      background: #05070c;
+      background: var(--surface);
     }
 
     .compact-card-note {
-      color: var(--ink);
-      font-size: 11px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      text-transform: none;
+      text-align: right;
     }
 
     .shipyard-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
-      margin-top: 22px;
+      margin-top: 0;
     }
 
     .shipyard-item {
-      padding: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: #0a0d14;
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: var(--surface);
     }
 
     .shipyard-item .summary-copy {
       min-height: 0;
-      font-size: 12px;
+      font-size: 13px;
     }
 
     .shipyard-stepper {
@@ -717,8 +722,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: #05070c;
+      border: 1px solid var(--line);
+      background: var(--surface-quiet);
       font-family: var(--font-data);
       font-weight: 700;
       font-size: 24px;
@@ -730,9 +735,9 @@
 
     .stepper-btn {
       min-height: 44px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: #f6efcf;
-      color: #05070c;
+      border: 1px solid var(--amber);
+      background: var(--amber);
+      color: #0d1524;
       font: inherit;
       font-weight: 700;
       font-size: 22px;
@@ -754,7 +759,7 @@
 
     .weapon-card.selected {
       border-color: var(--card-color, var(--ink));
-      background: #111620;
+      background: var(--surface);
     }
 
     .upgrade-card.disabled,
@@ -1013,8 +1018,8 @@
     .summary-item,
     .leaderboard-entry {
       padding: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: #0a0d14;
+      border: 1px solid var(--line);
+      background: var(--surface);
     }
 
     .screen-section-title {
@@ -1062,6 +1067,86 @@
       color: var(--muted);
       font-size: 14px;
       line-height: 1.45;
+    }
+
+    .hangar-build-stack {
+      display: grid;
+      gap: 16px;
+      margin-top: 22px;
+    }
+
+    .hangar-overview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .hangar-summary-card {
+      display: grid;
+      gap: 8px;
+      min-height: 126px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .hangar-primary-value,
+    .hangar-secondary-value {
+      font-family: var(--font-data);
+      font-weight: 700;
+      font-size: clamp(20px, 3vw, 28px);
+      line-height: 1.08;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .hangar-secondary-value {
+      font-size: clamp(18px, 2.5vw, 24px);
+    }
+
+    .hangar-tab-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .hangar-tab {
+      min-height: 52px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      background: var(--surface-quiet);
+      color: var(--ink);
+      font: inherit;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+    }
+
+    .hangar-tab:hover,
+    .hangar-tab:focus-visible {
+      border-color: var(--amber);
+      outline: none;
+    }
+
+    .hangar-tab.active {
+      background: var(--amber);
+      color: #0d1524;
+      border-color: var(--amber);
+    }
+
+    .hangar-active-section {
+      margin-top: 2px;
+    }
+
+    .hangar-panel {
+      display: grid;
+      gap: 12px;
+    }
+
+    .hangar-card-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 0;
     }
 
     .info-list {
@@ -1137,20 +1222,20 @@
       width: 100%;
       min-height: 52px;
       padding: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      background: #0a0d14;
+      border: 1px solid var(--line);
+      background: var(--surface-quiet);
       color: var(--ink);
       font: inherit;
     }
 
     .control::placeholder {
-      color: rgba(246, 239, 207, 0.45);
+      color: rgba(245, 247, 255, 0.42);
     }
 
     .control-range {
       width: 100%;
       margin: 0;
-      accent-color: #f6efcf;
+      accent-color: var(--amber);
     }
 
     .control-range:disabled,
@@ -1165,8 +1250,8 @@
       align-items: center;
       min-height: 52px;
       padding: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: #0a0d14;
+      border: 1px solid var(--line);
+      background: var(--surface-quiet);
       color: var(--ink);
     }
 
@@ -1251,10 +1336,16 @@
       .bottombar,
       .menu-layout,
       .cards,
+      .hangar-overview-grid,
+      .hangar-card-grid,
       .shipyard-grid,
       .results-grid,
       .summary-grid {
         grid-template-columns: 1fr;
+      }
+
+      .hangar-tab-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .chips {
@@ -1341,7 +1432,7 @@
     }
 
     body {
-      background: #05070c;
+      background: var(--bg);
     }
 
     body::before,
@@ -1370,20 +1461,21 @@
     .toast,
     .result,
     .mobile-btn {
-      background: #0a0d14 !important;
+      background: var(--panel-strong) !important;
+      border-color: var(--line) !important;
     }
 
     .action,
     .action.secondary {
-      background: #f6efcf !important;
-      color: #05070c !important;
-      border: 1px solid #f6efcf !important;
+      background: var(--amber) !important;
+      color: #0d1524 !important;
+      border: 1px solid var(--amber) !important;
     }
 
     .action.secondary {
-      background: transparent !important;
+      background: var(--surface) !important;
       color: var(--ink) !important;
-      border-color: rgba(255, 255, 255, 0.2) !important;
+      border-color: var(--line) !important;
     }
 
     .action:hover,
@@ -1397,7 +1489,8 @@
 
     .card,
     .chip {
-      background: #0a0d14 !important;
+      background: var(--surface-quiet) !important;
+      border-color: var(--line) !important;
     }
 
     .card::before {
@@ -1410,18 +1503,18 @@
     .meter-fill.drive {
       border-radius: 0 !important;
       box-shadow: none !important;
-      background: #f6efcf !important;
-      color: #f6efcf !important;
+      background: var(--lime) !important;
+      color: var(--lime) !important;
     }
 
     .meter-fill.shield {
-      background: #9ba2c7 !important;
-      color: #9ba2c7 !important;
+      background: var(--cyan) !important;
+      color: var(--cyan) !important;
     }
 
     .meter-fill.drive {
-      background: #ff6868 !important;
-      color: #ff6868 !important;
+      background: var(--amber) !important;
+      color: var(--amber) !important;
     }
 
     .mobile-zone::before,
@@ -1429,7 +1522,8 @@
     .mobile-knob,
     .mobile-btn.ready,
     .mobile-btn.disabled {
-      background: #0a0d14 !important;
+      background: var(--surface-quiet) !important;
+      border-color: var(--line) !important;
       box-shadow: none !important;
     }
 
@@ -1484,7 +1578,7 @@
     body[data-scene="running"] .stats-panel {
       min-height: 0;
       padding: 10px 12px;
-      background: rgba(10, 13, 20, 0.92) !important;
+      background: rgba(17, 25, 41, 0.96) !important;
     }
 
     body[data-scene="running"] .metric-value {
@@ -1718,11 +1812,11 @@
             <div class="menu-detail-list">
               <div class="menu-detail-row">
                 <div class="menu-detail-label">Ship</div>
-                <div class="menu-detail-value" id="menuCurrentBuild">Pulse Driver | Armor 4 | Speed 4</div>
+                <div class="menu-detail-value" id="menuCurrentBuild">Pulse Driver | Armor 4 | Speed 4 | Damage 4</div>
               </div>
               <div class="menu-detail-row">
                 <div class="menu-detail-label">Frame Budget</div>
-                <div class="menu-detail-value" id="menuBuildBudget">12 / 12</div>
+                <div class="menu-detail-value" id="menuBuildBudget">500 / 500</div>
               </div>
               <div class="menu-detail-row">
                 <div class="menu-detail-label">System Parts</div>
@@ -1757,87 +1851,101 @@
   </div>
 
   <div class="overlay hidden" id="upgradeScreen">
-    <div class="screen">
+    <div class="screen hangar-screen">
       <div class="screen-header">
         <div class="eyebrow">Hangar</div>
         <h2>Tune The Machine</h2>
         <p class="muted" id="upgradeCopy">Spend scrap between runs if you want to. The arena waits.</p>
       </div>
-      <div class="summary-grid">
-        <div class="summary-item">
-          <div class="summary-label">Scrap Bank</div>
-          <div class="summary-value" id="hangarCredits">0</div>
-          <p class="summary-copy">Every upgrade here persists into the next run.</p>
-        </div>
-        <div class="summary-item">
-          <div class="summary-label">Pilot Level</div>
-          <div class="summary-value" id="hangarLevel">1</div>
-          <p class="summary-copy" id="hangarXpCopy">0 / 120 XP to next level.</p>
-        </div>
-        <div class="summary-item">
-          <div class="summary-label">Skill Points</div>
-          <div class="summary-value" id="hangarSkillPoints">0</div>
-          <p class="summary-copy">Levels feed permanent pilot skills below.</p>
-        </div>
-      </div>
-      <div class="screen-section">
-        <div class="screen-section-title">Shipyard</div>
-        <p class="screen-section-copy">Base ship first. Budget and level gates do the rest.</p>
-      </div>
-      <div class="shipyard-grid">
-        <div class="shipyard-item">
-          <div class="summary-label">Base Ship Budget</div>
-          <div class="summary-value" id="shipBudgetValue">500 / 500</div>
-          <p class="summary-copy" id="shipBudgetCopy">Base ship online.</p>
-        </div>
-        <div class="shipyard-item">
-          <div class="summary-label">Armor Plates</div>
-          <p class="summary-copy">More armor means a thicker hull and more room to survive mistakes.</p>
-          <div class="shipyard-stepper">
-            <button class="stepper-btn" id="shipArmorDownBtn" type="button" aria-label="Lower armor">-</button>
-            <div class="shipyard-stepper-value" id="shipArmorValue">4</div>
-            <button class="stepper-btn" id="shipArmorUpBtn" type="button" aria-label="Raise armor">+</button>
+      <div class="hangar-build-stack">
+        <div class="hangar-overview-grid">
+          <div class="hangar-summary-card">
+            <div class="summary-label">Primary Weapon</div>
+            <div class="hangar-primary-value" id="shipWeaponValue">Pulse Driver</div>
+            <p class="summary-copy" id="shipWeaponCopy">Balanced starter cannon.</p>
+          </div>
+          <div class="hangar-summary-card">
+            <div class="summary-label">System Bays</div>
+            <div class="hangar-secondary-value" id="shipModulesValue">Base Hull</div>
+            <p class="summary-copy" id="shipModuleCopy">No system parts installed.</p>
+          </div>
+          <div class="hangar-summary-card">
+            <div class="summary-label">Budget</div>
+            <div class="summary-value" id="shipBudgetValue">500 / 500</div>
+            <p class="summary-copy" id="shipBudgetCopy">Frame budget online.</p>
+          </div>
+          <div class="hangar-summary-card">
+            <div class="summary-label">Scrap Bank</div>
+            <div class="summary-value" id="hangarCredits">0</div>
+            <p class="summary-copy">Persistent currency for the hangar.</p>
+          </div>
+          <div class="hangar-summary-card">
+            <div class="summary-label">Pilot Level</div>
+            <div class="summary-value" id="hangarLevel">1</div>
+            <p class="summary-copy" id="hangarXpCopy">0 / 120 XP to next level.</p>
+          </div>
+          <div class="hangar-summary-card">
+            <div class="summary-label">Skill Points</div>
+            <div class="summary-value" id="hangarSkillPoints">0</div>
+            <p class="summary-copy">Spend these in the skills lane.</p>
           </div>
         </div>
-        <div class="shipyard-item">
-          <div class="summary-label">Thruster Banks</div>
-          <p class="summary-copy">Speed buys acceleration, top speed, and a livelier dash.</p>
-          <div class="shipyard-stepper">
-            <button class="stepper-btn" id="shipSpeedDownBtn" type="button" aria-label="Lower speed">-</button>
-            <div class="shipyard-stepper-value" id="shipSpeedValue">4</div>
-            <button class="stepper-btn" id="shipSpeedUpBtn" type="button" aria-label="Raise speed">+</button>
+        <div class="screen-section">
+          <div class="screen-section-title">Base Ship Tuning</div>
+          <p class="screen-section-copy">Start with the frame. Armor, speed, and damage all pull from the same 500-point budget.</p>
+        </div>
+        <div class="shipyard-grid">
+          <div class="shipyard-item">
+            <div class="summary-label">Armor</div>
+            <p class="summary-copy">More hull buffer and better recovery room.</p>
+            <div class="shipyard-stepper">
+              <button class="stepper-btn" id="shipArmorDownBtn" type="button" aria-label="Lower armor">-</button>
+              <div class="shipyard-stepper-value" id="shipArmorValue">4</div>
+              <button class="stepper-btn" id="shipArmorUpBtn" type="button" aria-label="Raise armor">+</button>
+            </div>
+          </div>
+          <div class="shipyard-item">
+            <div class="summary-label">Speed</div>
+            <p class="summary-copy">Acceleration, top speed, and a sharper dash.</p>
+            <div class="shipyard-stepper">
+              <button class="stepper-btn" id="shipSpeedDownBtn" type="button" aria-label="Lower speed">-</button>
+              <div class="shipyard-stepper-value" id="shipSpeedValue">4</div>
+              <button class="stepper-btn" id="shipSpeedUpBtn" type="button" aria-label="Raise speed">+</button>
+            </div>
+          </div>
+          <div class="shipyard-item">
+            <div class="summary-label">Damage</div>
+            <p class="summary-copy">Base shot power before weapon mods or perks.</p>
+            <div class="shipyard-stepper">
+              <button class="stepper-btn" id="shipDamageDownBtn" type="button" aria-label="Lower damage">-</button>
+              <div class="shipyard-stepper-value" id="shipDamageValue">4</div>
+              <button class="stepper-btn" id="shipDamageUpBtn" type="button" aria-label="Raise damage">+</button>
+            </div>
           </div>
         </div>
-        <div class="shipyard-item">
-          <div class="summary-label">Damage Tuning</div>
-          <p class="summary-copy">Damage points raise the base ship's raw shot output before weapon mods kick in.</p>
-          <div class="shipyard-stepper">
-            <button class="stepper-btn" id="shipDamageDownBtn" type="button" aria-label="Lower damage">-</button>
-            <div class="shipyard-stepper-value" id="shipDamageValue">4</div>
-            <button class="stepper-btn" id="shipDamageUpBtn" type="button" aria-label="Raise damage">+</button>
-          </div>
+        <div class="hangar-tab-row" role="tablist" aria-label="Hangar upgrade categories">
+          <button class="hangar-tab active" data-hangar-category="weapons" type="button" role="tab" aria-selected="true">Weapons</button>
+          <button class="hangar-tab" data-hangar-category="systems" type="button" role="tab" aria-selected="false">Systems</button>
+          <button class="hangar-tab" data-hangar-category="upgrades" type="button" role="tab" aria-selected="false">Upgrades</button>
+          <button class="hangar-tab" data-hangar-category="skills" type="button" role="tab" aria-selected="false">Skills</button>
+        </div>
+        <div class="screen-section hangar-active-section">
+          <div class="screen-section-title" id="hangarCategoryTitle">Primary Weapon Parts</div>
+          <p class="screen-section-copy" id="hangarCategoryCopy">Swap the stock cannon once better parts unlock.</p>
+        </div>
+        <div class="hangar-panel" id="hangarWeaponsPanel">
+          <div class="cards hangar-card-grid" id="shipWeaponCards"></div>
+        </div>
+        <div class="hangar-panel" id="hangarSystemsPanel" hidden>
+          <div class="cards hangar-card-grid" id="shipModuleCards"></div>
+        </div>
+        <div class="hangar-panel" id="hangarUpgradesPanel" hidden>
+          <div class="cards hangar-card-grid" id="upgradeCards"></div>
+        </div>
+        <div class="hangar-panel" id="hangarSkillsPanel" hidden>
+          <div class="cards hangar-card-grid" id="skillCards"></div>
         </div>
       </div>
-      <div class="screen-section">
-        <div class="screen-section-title">Primary Weapon Part</div>
-        <p class="screen-section-copy">Swap the stock cannon once better parts unlock.</p>
-      </div>
-      <div class="cards" id="shipWeaponCards"></div>
-      <div class="screen-section">
-        <div class="screen-section-title">System Parts</div>
-        <p class="screen-section-copy" id="shipModuleCopy">Choose up to two system parts.</p>
-      </div>
-      <div class="cards" id="shipModuleCards"></div>
-      <div class="screen-section">
-        <div class="screen-section-title">Hangar Upgrades</div>
-        <p class="screen-section-copy">Permanent scrap upgrades for every run.</p>
-      </div>
-      <div class="cards" id="upgradeCards"></div>
-      <div class="screen-section">
-        <div class="screen-section-title">Pilot Skills</div>
-        <p class="screen-section-copy">Skill points shape pacing, survival, and flow.</p>
-      </div>
-      <div class="cards" id="skillCards"></div>
       <div class="screen-actions">
         <button class="action" id="hangarStartBtn">Start Run</button>
         <button class="action secondary" id="hangarMenuBtn">Back To Menu</button>
@@ -2048,6 +2156,9 @@
       hangarLevel: document.getElementById("hangarLevel"),
       hangarXpCopy: document.getElementById("hangarXpCopy"),
       hangarSkillPoints: document.getElementById("hangarSkillPoints"),
+      shipWeaponValue: document.getElementById("shipWeaponValue"),
+      shipWeaponCopy: document.getElementById("shipWeaponCopy"),
+      shipModulesValue: document.getElementById("shipModulesValue"),
       shipBudgetValue: document.getElementById("shipBudgetValue"),
       shipBudgetCopy: document.getElementById("shipBudgetCopy"),
       shipArmorValue: document.getElementById("shipArmorValue"),
@@ -2059,6 +2170,13 @@
       shipSpeedUpBtn: document.getElementById("shipSpeedUpBtn"),
       shipDamageDownBtn: document.getElementById("shipDamageDownBtn"),
       shipDamageUpBtn: document.getElementById("shipDamageUpBtn"),
+      hangarCategoryButtons: Array.from(document.querySelectorAll("[data-hangar-category]")),
+      hangarCategoryTitle: document.getElementById("hangarCategoryTitle"),
+      hangarCategoryCopy: document.getElementById("hangarCategoryCopy"),
+      hangarWeaponsPanel: document.getElementById("hangarWeaponsPanel"),
+      hangarSystemsPanel: document.getElementById("hangarSystemsPanel"),
+      hangarUpgradesPanel: document.getElementById("hangarUpgradesPanel"),
+      hangarSkillsPanel: document.getElementById("hangarSkillsPanel"),
       shipWeaponCards: document.getElementById("shipWeaponCards"),
       shipModuleCopy: document.getElementById("shipModuleCopy"),
       shipModuleCards: document.getElementById("shipModuleCards"),
@@ -2849,6 +2967,7 @@
 
     const state = {
       phase: "menu",
+      hangarCategory: "weapons",
       width: 0,
       height: 0,
       dpr: Math.min(window.devicePixelRatio || 1, 2),
@@ -3648,6 +3767,25 @@
       }[id] || "Pilot skill";
     }
 
+    const HANGAR_CATEGORY_DEFS = {
+      weapons: {
+        title: "Primary Weapon Parts",
+        copy: "Pick the main gun platform for the run. Level gates and the budget keep the build honest."
+      },
+      systems: {
+        title: "System Parts",
+        copy: "Support parts reshape the frame. You can mount up to two at the same time."
+      },
+      upgrades: {
+        title: "Hangar Upgrades",
+        copy: "Permanent scrap purchases that improve every run regardless of the ship part setup."
+      },
+      skills: {
+        title: "Pilot Skills",
+        copy: "Spend skill points on pacing, control, and survival once your pilot levels up."
+      }
+    };
+
     function createCompactHangarCard({ className, color, tag, title, copy, status, pills = [], note = "", disabled = false, onClick = null }) {
       const button = document.createElement("button");
       button.type = "button";
@@ -3656,13 +3794,15 @@
       button.disabled = disabled;
       button.innerHTML = `
         <div class="compact-card-top">
-          <div class="card-tag">${tag}</div>
+          <div>
+            <div class="card-tag">${tag}</div>
+            <div class="card-title">${title}</div>
+          </div>
           <div class="compact-card-status">${status}</div>
         </div>
-        <div class="card-title">${title}</div>
         <div class="card-text">${copy}</div>
-        <div class="compact-card-pills">${pills.map((pill) => `<span class="compact-card-pill">${pill}</span>`).join("")}</div>
         <div class="compact-card-bottom">
+          <div class="compact-card-pills">${pills.map((pill) => `<span class="compact-card-pill">${pill}</span>`).join("")}</div>
           <div class="compact-card-note">${note}</div>
         </div>
       `;
@@ -4130,6 +4270,14 @@
       renderHangarShop();
     }
 
+    function setHangarCategory(category) {
+      if (!HANGAR_CATEGORY_DEFS[category]) return;
+      state.hangarCategory = category;
+      if (state.phase === "hangar") {
+        renderHangarShop();
+      }
+    }
+
     function openHangar() {
       state.phase = "hangar";
       syncSceneUi();
@@ -4167,22 +4315,20 @@
       const weapon = getWeaponDef(design.weapon);
       const budgetUsed = getShipDesignCost(design);
       const budgetLeft = SHIP_BUDGET - budgetUsed;
+      const activeCategory = HANGAR_CATEGORY_DEFS[state.hangarCategory] ? state.hangarCategory : "weapons";
       state.meta.design = design;
+      state.hangarCategory = activeCategory;
       ui.hangarCredits.textContent = padScore(state.meta.scrap);
       ui.hangarLevel.textContent = padScore(state.meta.level);
       ui.hangarSkillPoints.textContent = padScore(state.meta.skillPoints);
       ui.hangarXpCopy.textContent = padScore(progress.current) + " / " + padScore(progress.needed) + " XP to next level.";
-      ui.upgradeCopy.textContent = "Tune the base ship, buy persistent upgrades, and spend skill points cleanly between runs.";
+      ui.upgradeCopy.textContent = "Review the build, choose a category, and spend only where the frame actually needs it.";
+      ui.shipWeaponValue.textContent = weapon.title;
+      ui.shipWeaponCopy.textContent = getWeaponCardCopy(weapon.id);
+      ui.shipModulesValue.textContent = design.modules.length ? design.modules.length + " / " + SHIP_MAX_MODULES + " Bays" : "Base Hull";
+      ui.shipModuleCopy.textContent = design.modules.length ? getShipModuleSummary(design) : "No system parts installed.";
       ui.shipBudgetValue.textContent = padScore(budgetUsed) + " / " + padScore(SHIP_BUDGET);
-      ui.shipBudgetCopy.textContent =
-        weapon.title +
-        " mounted. " +
-        padScore(Math.max(0, budgetLeft)) +
-        " left. " +
-        design.modules.length +
-        "/" +
-        SHIP_MAX_MODULES +
-        " modules.";
+      ui.shipBudgetCopy.textContent = padScore(Math.max(0, budgetLeft)) + " budget left for parts or core stats.";
       ui.shipArmorValue.textContent = String(design.armor);
       ui.shipSpeedValue.textContent = String(design.speed);
       ui.shipDamageValue.textContent = String(design.damage);
@@ -4192,6 +4338,17 @@
       ui.shipArmorUpBtn.disabled = design.armor >= SHIP_STAT_LIMIT || budgetLeft < SHIP_STAT_COST;
       ui.shipSpeedUpBtn.disabled = design.speed >= SHIP_STAT_LIMIT || budgetLeft < SHIP_STAT_COST;
       ui.shipDamageUpBtn.disabled = design.damage >= SHIP_STAT_LIMIT || budgetLeft < SHIP_STAT_COST;
+      ui.hangarCategoryTitle.textContent = HANGAR_CATEGORY_DEFS[activeCategory].title;
+      ui.hangarCategoryCopy.textContent = HANGAR_CATEGORY_DEFS[activeCategory].copy;
+      ui.hangarCategoryButtons.forEach((button) => {
+        const selected = button.dataset.hangarCategory === activeCategory;
+        button.classList.toggle("active", selected);
+        button.setAttribute("aria-selected", selected ? "true" : "false");
+      });
+      ui.hangarWeaponsPanel.hidden = activeCategory !== "weapons";
+      ui.hangarSystemsPanel.hidden = activeCategory !== "systems";
+      ui.hangarUpgradesPanel.hidden = activeCategory !== "upgrades";
+      ui.hangarSkillsPanel.hidden = activeCategory !== "skills";
       ui.shipWeaponCards.innerHTML = "";
       WEAPON_DEFS.forEach((entry) => {
         const selected = entry.id === design.weapon;
@@ -4229,9 +4386,6 @@
           })
         );
       });
-      ui.shipModuleCopy.textContent = design.modules.length
-        ? design.modules.length + "/" + SHIP_MAX_MODULES + " active. " + getShipModuleSummary(design) + "."
-        : "Base hull only.";
       ui.shipModuleCards.innerHTML = "";
       MODULE_DEFS.forEach((entry) => {
         const selected = design.modules.includes(entry.id);
@@ -6137,6 +6291,13 @@
     ui.shipDamageUpBtn.addEventListener("click", () => {
       clearUiFocus();
       shiftShipDesignStat("damage", 1);
+    });
+
+    ui.hangarCategoryButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        clearUiFocus();
+        setHangarCategory(button.dataset.hangarCategory);
+      });
     });
 
     ui.hangarMenuBtn.addEventListener("click", () => {
