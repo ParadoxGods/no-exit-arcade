@@ -13,7 +13,7 @@
 - Pointer aim + keyboard movement, dash, and overdrive.
 - Waves with bosses every fourth round.
 - Marked bounty targets appear during runs. Killing them triggers `Reactor Rush`, a short buff to movement, fire rate, pickup magnetism, and overdrive gain.
-- Persistent profile data is stored in `state.meta` and now includes `scrap`, `xp`, `level`, `skillPoints`, `loadout`, and `skills`.
+- Persistent profile data is stored in `state.meta` and now includes `scrap`, `xp`, `level`, `skillPoints`, `loadout`, `skills`, ship `design`, and simple run `records`.
 - `state.meta.design` stores the shipyard build: selected weapon family plus point allocations for armor and speed.
 - The shipyard uses a fixed `12` point frame budget, so `weapon cost + armor + speed` can never exceed the cap.
 - Weapon families currently ship as `Pulse Driver`, `Scatter Array`, `Needle Carbine`, and `Rail Lance`.

@@ -388,7 +388,7 @@
 
     .menu-copy {
       display: grid;
-      gap: 16px;
+      gap: 18px;
     }
 
     .chips {
@@ -433,6 +433,84 @@
       line-height: 1.5;
       color: var(--muted);
       font-size: 14px;
+    }
+
+    .menu-hero {
+      display: grid;
+      gap: 18px;
+    }
+
+    .menu-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .menu-kpi {
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #0a0d14;
+    }
+
+    .menu-kpi-label {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .menu-kpi-value {
+      margin-top: 8px;
+      font-family: Impact, "Arial Black", sans-serif;
+      font-size: clamp(20px, 4vw, 30px);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .menu-detail-list {
+      display: grid;
+      gap: 0;
+      margin-top: 6px;
+    }
+
+    .menu-detail-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .menu-detail-row:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .menu-detail-label {
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .menu-detail-value {
+      color: var(--ink);
+      font-size: 14px;
+      text-align: right;
+      line-height: 1.45;
+    }
+
+    .menu-dashboard {
+      display: grid;
+      gap: 12px;
+    }
+
+    .menu-callout {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
     }
 
     .button-row {
@@ -1126,6 +1204,10 @@
         flex-direction: column;
       }
 
+      .menu-stat-grid {
+        grid-template-columns: 1fr;
+      }
+
       .button-row .action {
         width: 100%;
       }
@@ -1494,78 +1576,112 @@
     <div class="screen">
       <div class="menu-layout">
         <div class="menu-copy">
-          <div class="screen-header">
-            <div class="eyebrow">Personal Amusement Protocol</div>
-            <h1>No Exit Arcade</h1>
-            <p class="lede">A one-file arcade run with a simple loop: tune the ship, enter the arena, survive, bank scrap, and push the board.</p>
-            <p class="muted">
-              This version keeps the game screen dominant. Setup, upgrades, settings, and leaderboard live in separate utility scenes so the run itself stays clean.
-            </p>
-          </div>
-          <div class="chips">
-          <div class="chip">Arena First</div>
-          <div class="chip">Persistent Loadout</div>
-          <div class="chip">Pilot Levels</div>
-          <div class="chip">Live Board</div>
-        </div>
-          <div class="screen-section">
-            <div class="screen-section-title">Run Structure</div>
-            <div class="summary-grid">
-              <div class="summary-item">
-                <div class="summary-label">Step 1</div>
-                <div class="summary-value">Build</div>
-                <p class="summary-copy">Spend scrap in the hangar before the next run, not during combat.</p>
+          <div class="menu-hero">
+            <div class="screen-header">
+              <div class="eyebrow">Launch Bay</div>
+              <h1>No Exit Arcade</h1>
+              <p class="lede">Tune the ship, enter the arena, bank scrap, and bring back a better build.</p>
+              <p class="menu-callout" id="menuNextUnlock">Next unlock data loading.</p>
+            </div>
+            <div class="screen-actions">
+              <button class="action" id="startBtn">Open Shipyard</button>
+              <button class="action secondary" id="menuPulseBtn">Launch Current Build</button>
+            </div>
+            <div class="menu-stat-grid">
+              <div class="menu-kpi">
+                <div class="menu-kpi-label">Best Score</div>
+                <div class="menu-kpi-value" id="menuBestScore">0</div>
               </div>
-              <div class="summary-item">
-                <div class="summary-label">Step 2</div>
-                <div class="summary-value">Fight</div>
-                <p class="summary-copy">Clear waves, keep the combo alive, and survive every fourth-wave boss.</p>
+              <div class="menu-kpi">
+                <div class="menu-kpi-label">Best Wave</div>
+                <div class="menu-kpi-value" id="menuBestWave">0</div>
               </div>
-              <div class="summary-item">
-                <div class="summary-label">Step 3</div>
-                <div class="summary-value">Submit</div>
-                <p class="summary-copy">Post a validated score to the public leaderboard when the run is over.</p>
+              <div class="menu-kpi">
+                <div class="menu-kpi-label">Runs Logged</div>
+                <div class="menu-kpi-value" id="menuRuns">0</div>
               </div>
             </div>
-          </div>
-          <div class="screen-actions">
-            <button class="action" id="startBtn">Open Hangar</button>
-            <button class="action secondary" id="menuPulseBtn">Quick Start</button>
+            <div class="screen-section">
+              <div class="screen-section-title">Arena Snapshot</div>
+              <div class="menu-detail-list">
+                <div class="menu-detail-row">
+                  <div class="menu-detail-label">Boss Cycle</div>
+                  <div class="menu-detail-value">Every 4th wave</div>
+                </div>
+                <div class="menu-detail-row">
+                  <div class="menu-detail-label">Progression</div>
+                  <div class="menu-detail-value">Scrap, levels, and ship builds persist between runs</div>
+                </div>
+                <div class="menu-detail-row">
+                  <div class="menu-detail-label">Leaderboard</div>
+                  <div class="menu-detail-value">Public GitHub issue board with live validation</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="stack-tight">
+        <div class="menu-dashboard">
           <div class="screen-section">
-            <div class="screen-section-title">Controls</div>
-            <div class="info-list">
-              <div class="info-line">
-                <div class="info-title">Move</div>
-                <p class="info-copy">`WASD` or the left thumb zone.</p>
+            <div class="screen-section-title">Pilot Status</div>
+            <div class="menu-detail-list">
+              <div class="menu-detail-row">
+                <div class="menu-detail-label">Pilot Tag</div>
+                <div class="menu-detail-value" id="menuPilotName">Anonymous</div>
               </div>
-              <div class="info-line">
-                <div class="info-title">Aim And Fire</div>
-                <p class="info-copy">Mouse hold, `Space`, or the right thumb zone.</p>
+              <div class="menu-detail-row">
+                <div class="menu-detail-label">Pilot Level</div>
+                <div class="menu-detail-value" id="menuPilotLevel">Lv. 1</div>
               </div>
-              <div class="info-line">
-                <div class="info-title">Abilities</div>
-                <p class="info-copy">`Shift` to dash and `Q` to trigger overdrive.</p>
+              <div class="menu-detail-row">
+                <div class="menu-detail-label">XP Progress</div>
+                <div class="menu-detail-value" id="menuPilotXp">0 / 120 XP</div>
+              </div>
+              <div class="menu-detail-row">
+                <div class="menu-detail-label">Scrap Bank</div>
+                <div class="menu-detail-value" id="menuPilotScrap">0</div>
+              </div>
+              <div class="menu-detail-row">
+                <div class="menu-detail-label">Skill Points</div>
+                <div class="menu-detail-value" id="menuPilotSkillPoints">0</div>
               </div>
             </div>
           </div>
           <div class="screen-section">
-            <div class="screen-section-title">Approach</div>
-            <div class="info-list">
-              <div class="info-line">
-                <div class="info-title">Commit</div>
-                <p class="info-copy">Stack upgrades in one direction instead of spreading scrap thin.</p>
+            <div class="screen-section-title">Current Build</div>
+            <div class="menu-detail-list">
+              <div class="menu-detail-row">
+                <div class="menu-detail-label">Ship</div>
+                <div class="menu-detail-value" id="menuCurrentBuild">Pulse Driver | Armor 4 | Speed 4</div>
               </div>
-              <div class="info-line">
-                <div class="info-title">Tempo</div>
-                <p class="info-copy">Dash early, keep lanes open, and chase marked targets to trigger Reactor Rush.</p>
+              <div class="menu-detail-row">
+                <div class="menu-detail-label">Frame Budget</div>
+                <div class="menu-detail-value" id="menuBuildBudget">12 / 12</div>
               </div>
-              <div class="info-line">
-                <div class="info-title">Hidden Code</div>
-                <p class="info-copy">Type `DISCO` if the room starts feeling too stable.</p>
+              <div class="menu-detail-row">
+                <div class="menu-detail-label">Installed Upgrades</div>
+                <div class="menu-detail-value" id="menuBuildUpgrades">0</div>
+              </div>
+              <div class="menu-detail-row">
+                <div class="menu-detail-label">Pilot Skills</div>
+                <div class="menu-detail-value" id="menuBuildSkills">0</div>
+              </div>
+            </div>
+          </div>
+          <div class="screen-section">
+            <div class="screen-section-title">Controls</div>
+            <div class="menu-detail-list">
+              <div class="menu-detail-row">
+                <div class="menu-detail-label">Move</div>
+                <div class="menu-detail-value">WASD or left thumb zone</div>
+              </div>
+              <div class="menu-detail-row">
+                <div class="menu-detail-label">Aim / Fire</div>
+                <div class="menu-detail-value">Mouse hold, Space, or right thumb zone</div>
+              </div>
+              <div class="menu-detail-row">
+                <div class="menu-detail-label">Abilities</div>
+                <div class="menu-detail-value">Shift to dash, Q for overdrive, DISCO for chaos</div>
               </div>
             </div>
           </div>
@@ -1808,6 +1924,19 @@
 
     const ui = {
       menu: document.getElementById("menu"),
+      menuBestScore: document.getElementById("menuBestScore"),
+      menuBestWave: document.getElementById("menuBestWave"),
+      menuRuns: document.getElementById("menuRuns"),
+      menuPilotName: document.getElementById("menuPilotName"),
+      menuPilotLevel: document.getElementById("menuPilotLevel"),
+      menuPilotXp: document.getElementById("menuPilotXp"),
+      menuPilotScrap: document.getElementById("menuPilotScrap"),
+      menuPilotSkillPoints: document.getElementById("menuPilotSkillPoints"),
+      menuCurrentBuild: document.getElementById("menuCurrentBuild"),
+      menuBuildBudget: document.getElementById("menuBuildBudget"),
+      menuBuildUpgrades: document.getElementById("menuBuildUpgrades"),
+      menuBuildSkills: document.getElementById("menuBuildSkills"),
+      menuNextUnlock: document.getElementById("menuNextUnlock"),
       upgrade: document.getElementById("upgradeScreen"),
       gameOver: document.getElementById("gameOver"),
       startBtn: document.getElementById("startBtn"),
@@ -2015,6 +2144,10 @@
             ...createEmptySkills(),
             ...(parsed.skills || {})
           },
+          records: {
+            ...createEmptyRecords(),
+            ...(parsed.records || {})
+          },
           design: normalizeShipDesign({
             ...createDefaultShipDesign(),
             ...(parsed.design || {})
@@ -2070,6 +2203,16 @@
       };
     }
 
+    function createEmptyRecords() {
+      return {
+        runs: 0,
+        bestScore: 0,
+        bestWave: 0,
+        bestCombo: 0,
+        totalKills: 0
+      };
+    }
+
     function createDefaultShipDesign() {
       return {
         weapon: "pulse",
@@ -2086,6 +2229,7 @@
         skillPoints: 0,
         loadout: createEmptyLoadout(),
         skills: createEmptySkills(),
+        records: createEmptyRecords(),
         design: createDefaultShipDesign()
       };
     }
@@ -2214,6 +2358,19 @@
     function getShipDesignSignature(design = state && state.meta ? state.meta.design : createDefaultShipDesign()) {
       const safe = sanitizeShipDesign(design);
       return `weapon=${safe.weapon},armor=${safe.armor},speed=${safe.speed}`;
+    }
+
+    function getNextUnlockSummary() {
+      const nextLevel = [...UPGRADE_DEFS, ...SKILL_DEFS]
+        .map((entry) => entry.unlockLevel || 1)
+        .filter((level) => level > state.meta.level)
+        .sort((a, b) => a - b)[0];
+      if (!nextLevel) return "Full roster unlocked. Push the build harder.";
+      const names = [
+        ...UPGRADE_DEFS.filter((entry) => (entry.unlockLevel || 1) === nextLevel).map((entry) => entry.title),
+        ...SKILL_DEFS.filter((entry) => (entry.unlockLevel || 1) === nextLevel).map((entry) => entry.title)
+      ];
+      return "Next unlock at Pilot Lv. " + nextLevel + ": " + names.slice(0, 3).join(", ") + (names.length > 3 ? "..." : ".");
     }
 
     function createEmptyKillBreakdown() {
@@ -3042,6 +3199,33 @@
 
     function syncSceneUi() {
       document.body.dataset.scene = state.phase;
+    }
+
+    function renderMenu() {
+      const progress = getProfileProgress();
+      const records = {
+        ...createEmptyRecords(),
+        ...(state.meta.records || {})
+      };
+      const design = normalizeShipDesign(state.meta.design);
+      const buildCost = getShipDesignCost(design);
+      const installedUpgrades = Object.values(state.meta.loadout).reduce((sum, level) => sum + (level > 0 ? 1 : 0), 0);
+      const trainedSkills = Object.values(state.meta.skills).reduce((sum, level) => sum + (level > 0 ? 1 : 0), 0);
+      state.meta.records = records;
+      state.meta.design = design;
+      ui.menuBestScore.textContent = padScore(records.bestScore);
+      ui.menuBestWave.textContent = padScore(records.bestWave);
+      ui.menuRuns.textContent = padScore(records.runs);
+      ui.menuPilotName.textContent = state.playerName || "Anonymous";
+      ui.menuPilotLevel.textContent = "Lv. " + padScore(state.meta.level);
+      ui.menuPilotXp.textContent = padScore(progress.current) + " / " + padScore(progress.needed) + " XP";
+      ui.menuPilotScrap.textContent = padScore(state.meta.scrap);
+      ui.menuPilotSkillPoints.textContent = padScore(state.meta.skillPoints);
+      ui.menuCurrentBuild.textContent = getShipDesignSummary(design);
+      ui.menuBuildBudget.textContent = buildCost + " / " + SHIP_BUDGET + " Frame";
+      ui.menuBuildUpgrades.textContent = padScore(installedUpgrades) + " installed";
+      ui.menuBuildSkills.textContent = padScore(trainedSkills) + " trained";
+      ui.menuNextUnlock.textContent = getNextUnlockSummary();
     }
 
     function showFlash(lead, main) {
@@ -4702,6 +4886,11 @@
           Math.floor(state.stats.kills / 18)
       );
       state.meta.scrap += state.lastRunScrap;
+      state.meta.records.runs += 1;
+      state.meta.records.bestScore = Math.max(state.meta.records.bestScore, Math.floor(state.score));
+      state.meta.records.bestWave = Math.max(state.meta.records.bestWave, state.stats.wavesCleared);
+      state.meta.records.bestCombo = Math.max(state.meta.records.bestCombo, state.stats.longestCombo);
+      state.meta.records.totalKills += state.stats.kills;
       persistProfile();
       audio.gameOver();
       showOverlay(ui.gameOver);
@@ -4747,6 +4936,7 @@
       state.lastRunScrap = 0;
       state.lastRunXp = 0;
       state.lastRunLevelUps = 0;
+      renderMenu();
       showOverlay(ui.menu);
       hideOverlay(ui.upgrade);
       hideOverlay(ui.gameOver);
@@ -5576,6 +5766,7 @@
     ui.playerNameInput.addEventListener("change", () => {
       savePlayerName(ui.playerNameInput.value);
       renderSettingsUi();
+      renderMenu();
     });
 
     ui.qualitySelect.addEventListener("change", () => {
@@ -5620,6 +5811,7 @@
     resize();
     syncSceneUi();
     syncUtilityRail();
+    renderMenu();
     applySettings();
     refreshHud(true);
     fetchLeaderboard(true);
