@@ -177,6 +177,52 @@
       gap: 10px 14px;
     }
 
+    .status-strip {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .status-chip {
+      padding: 8px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .status-label {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .status-value {
+      font-family: Impact, "Arial Black", sans-serif;
+      font-size: 20px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .hunt-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 8px;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .hunt-line strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
     .metric-label {
       font-size: 11px;
       letter-spacing: 0.2em;
@@ -1254,8 +1300,21 @@
         font-size: 18px;
       }
 
+      body[data-scene="running"] .status-strip {
+        gap: 6px;
+      }
+
+      body[data-scene="running"] .status-chip {
+        padding: 7px 8px;
+      }
+
+      body[data-scene="running"] .status-value {
+        font-size: 16px;
+      }
+
       body[data-scene="running"] .metric-label,
-      body[data-scene="running"] .bar-caption {
+      body[data-scene="running"] .bar-caption,
+      body[data-scene="running"] .hunt-line {
         font-size: 10px;
       }
     }
@@ -1284,6 +1343,20 @@
             <div class="metric-label">Wave</div>
             <div class="metric-value" id="waveValue">0</div>
           </div>
+        </div>
+        <div class="status-strip">
+          <div class="status-chip">
+            <span class="status-label">Combo</span>
+            <span class="status-value" id="comboValue">0</span>
+          </div>
+          <div class="status-chip">
+            <span class="status-label">Rush</span>
+            <span class="status-value" id="rushText">Dormant</span>
+          </div>
+        </div>
+        <div class="hunt-line">
+          <span>Marked Target</span>
+          <strong id="bountyText">Scanning</strong>
         </div>
         <div class="bar-stack primary">
           <div>
@@ -1411,7 +1484,7 @@
               </div>
               <div class="info-line">
                 <div class="info-title">Tempo</div>
-                <p class="info-copy">Dash early, keep lanes open, and cash in overdrive as soon as it is ready.</p>
+                <p class="info-copy">Dash early, keep lanes open, and chase marked targets to trigger Reactor Rush.</p>
               </div>
               <div class="info-line">
                 <div class="info-title">Hidden Code</div>
@@ -1624,6 +1697,9 @@
       backToMenuBtn: document.getElementById("backToMenuBtn"),
       scoreValue: document.getElementById("scoreValue"),
       waveValue: document.getElementById("waveValue"),
+      comboValue: document.getElementById("comboValue"),
+      rushText: document.getElementById("rushText"),
+      bountyText: document.getElementById("bountyText"),
       healthFill: document.getElementById("healthFill"),
       shieldFill: document.getElementById("shieldFill"),
       driveFill: document.getElementById("driveFill"),
@@ -1782,6 +1858,16 @@
         x: 0,
         y: 0,
         strength: 0
+      };
+    }
+
+    function createBountyState() {
+      return {
+        active: false,
+        enemyId: 0,
+        timer: 0,
+        cooldown: 1.8,
+        claims: 0
       };
     }
 
@@ -1964,11 +2050,13 @@
         wavesCleared: 0,
         longestCombo: 0,
         bossesSlain: 0,
+        bountiesClaimed: 0,
         killScore: 0,
         waveScore: 0,
         runMs: 0,
         killBreakdown: createEmptyKillBreakdown()
       },
+      bounty: createBountyState(),
       upgradeChoices: [],
       meta: {
         scrap: 0,
@@ -2190,6 +2278,13 @@
         this.note(880, t + 0.06, 0.22, "sawtooth", 0.04, this.sfx, 0.003, 280);
       },
 
+      bounty() {
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        this.note(280, t, 0.08, "square", 0.05, this.sfx, 0.002, 560);
+        this.note(560, t + 0.05, 0.1, "triangle", 0.05, this.sfx, 0.002, 920);
+      },
+
       boss() {
         if (!this.ctx) return;
         const t = this.ctx.currentTime;
@@ -2225,6 +2320,7 @@
         dashCooldown: 0,
         overdrive: 0,
         overdriveActive: 0,
+        rushActive: 0,
         lastDamageAt: 0,
         shotCounter: 0,
         multishot: loadout.multishot,
@@ -2246,6 +2342,145 @@
         player.droneTimers.push(rand(0.1, 0.7));
       }
       return player;
+    }
+
+    function formatEnemyType(type) {
+      return (
+        {
+          scout: "Scout",
+          shooter: "Shooter",
+          splitter: "Splitter",
+          mini: "Mini",
+          dasher: "Dasher",
+          orbiter: "Orbiter",
+          brute: "Brute",
+          boss: "Warden"
+        }[type] || "Target"
+      );
+    }
+
+    function getBountyEnemy() {
+      if (!state.bounty.active || !state.bounty.enemyId) return null;
+      return state.enemies.find((enemy) => enemy.id === state.bounty.enemyId && !enemy.dead) || null;
+    }
+
+    function clearBounty(cooldown = 1.8) {
+      const enemy = getBountyEnemy();
+      if (enemy) {
+        enemy.bounty = false;
+      }
+      state.bounty.active = false;
+      state.bounty.enemyId = 0;
+      state.bounty.timer = 0;
+      state.bounty.cooldown = cooldown;
+    }
+
+    function markBountyTarget(enemy) {
+      if (!enemy || enemy.dead) return;
+      clearBounty(0);
+      enemy.bounty = true;
+      if (!enemy.bountyBoosted) {
+        const scale = enemy.type === "boss" ? 1.16 : 1.3;
+        enemy.health = Math.round(enemy.health * scale);
+        enemy.maxHealth = Math.round(enemy.maxHealth * scale);
+        enemy.speed *= enemy.type === "boss" ? 1.05 : 1.12;
+        enemy.bountyBoosted = true;
+      }
+      state.bounty.active = true;
+      state.bounty.enemyId = enemy.id;
+      state.bounty.timer = enemy.type === "boss" ? 18 : 10.5 + Math.min(4, state.wave * 0.35);
+      state.bounty.cooldown = 0;
+      spawnFloatingText(enemy.x, enemy.y - enemy.radius - 16, "MARKED", "#f6efcf");
+    }
+
+    function chooseBountyTarget() {
+      const candidates = state.enemies.filter((enemy) => !enemy.dead && !enemy.bounty);
+      if (!candidates.length) return null;
+
+      const preferred = candidates.filter((enemy) => enemy.type !== "mini");
+      const pool = preferred.length ? preferred : candidates;
+
+      let choice = null;
+      let bestWeight = -Infinity;
+      for (const enemy of pool) {
+        const weight =
+          (enemy.type === "boss" ? 1000 : enemy.score * 3 + enemy.maxHealth * 0.3) +
+          Math.random() * 18;
+        if (weight > bestWeight) {
+          bestWeight = weight;
+          choice = enemy;
+        }
+      }
+      return choice;
+    }
+
+    function expireBounty() {
+      const enemy = getBountyEnemy();
+      if (enemy) {
+        enemy.bounty = false;
+        enemy.enraged = true;
+        enemy.speed *= enemy.type === "boss" ? 1.08 : 1.18;
+        enemy.fireCooldown = Math.min(enemy.fireCooldown, enemy.type === "boss" ? 0.9 : 0.45);
+        spawnFloatingText(enemy.x, enemy.y - enemy.radius - 16, "MISSED", "#ff6868");
+        burst(enemy.x, enemy.y, "#ff6868", 10, 0.7);
+      }
+      state.bounty.active = false;
+      state.bounty.enemyId = 0;
+      state.bounty.timer = 0;
+      state.bounty.cooldown = 4.2;
+    }
+
+    function claimBounty(enemy) {
+      const player = state.player;
+      if (!player) return;
+
+      const rushGain = enemy.type === "boss" ? 8.5 : 4.8;
+      player.rushActive = Math.min(18, player.rushActive + rushGain);
+      player.overdrive = clamp(player.overdrive + (enemy.type === "boss" ? 36 : 22) + player.redline * 2, 0, 100);
+      player.health = Math.min(player.maxHealth, player.health + (enemy.type === "boss" ? 12 : 6));
+      player.shield = Math.min(getMaxShield(player), player.shield + (enemy.type === "boss" ? 20 : 10));
+      state.comboTimer = Math.max(state.comboTimer, 4.2);
+      state.bounty.claims += 1;
+      state.stats.bountiesClaimed += 1;
+      state.cameraShake = Math.max(state.cameraShake, 7);
+      state.pulseFlash = Math.max(state.pulseFlash, 0.22);
+      burst(enemy.x, enemy.y, "#f6efcf", enemy.type === "boss" ? 24 : 16, 1.15);
+      spawnFloatingText(enemy.x, enemy.y - enemy.radius - 14, "BOUNTY", "#f6efcf");
+      audio.bounty();
+      if (enemy.type === "boss") {
+        showFlash("Bounty Claimed", "Rush Online");
+      } else if (state.stats.bountiesClaimed === 1) {
+        toast("Reactor Rush", "Marked kills now spike movement, fire rate, and drive charge.");
+      }
+      clearBounty(2.8);
+    }
+
+    function updateBounty(dt) {
+      if (state.phase !== "running") return;
+
+      if (state.bounty.active) {
+        const enemy = getBountyEnemy();
+        if (!enemy) {
+          clearBounty(2.4);
+          return;
+        }
+
+        state.bounty.timer -= dt;
+        if (state.bounty.timer <= 0) {
+          expireBounty();
+        }
+        return;
+      }
+
+      state.bounty.cooldown = Math.max(0, state.bounty.cooldown - dt);
+      if (state.bounty.cooldown > 0 || !state.enemies.length) return;
+
+      const target = chooseBountyTarget();
+      if (target) {
+        markBountyTarget(target);
+      } else {
+        state.bounty.cooldown = 1.2;
+      }
     }
 
     function resize() {
@@ -2685,6 +2920,7 @@
       syncSceneUi();
       closeLeaderboard();
       closeSettings();
+      state.bounty = createBountyState();
       state.score = 0;
       state.combo = 0;
       state.comboTimer = 0;
@@ -2713,6 +2949,7 @@
       state.stats.wavesCleared = 0;
       state.stats.longestCombo = 0;
       state.stats.bossesSlain = 0;
+      state.stats.bountiesClaimed = 0;
       state.stats.killScore = 0;
       state.stats.waveScore = 0;
       state.stats.runMs = 0;
@@ -2727,6 +2964,7 @@
     }
 
     function startWave(number) {
+      clearBounty(number === 1 ? 1.2 : 1.8);
       state.wave = number;
       state.waveTimer = 0;
       state.waveBoss = number % 4 === 0;
@@ -2774,6 +3012,7 @@
       syncSceneUi();
       closeLeaderboard();
       closeSettings();
+      state.bounty = createBountyState();
       state.score = 0;
       state.wave = 0;
       state.combo = 0;
@@ -2907,6 +3146,7 @@
 
       const config = configs[type];
       const enemy = {
+        id: state.frame + state.enemies.length + Math.floor(Math.random() * 100000),
         type,
         x: pos.x,
         y: pos.y,
@@ -2924,6 +3164,9 @@
         dashTimer: rand(0.8, 1.6),
         summonTimer: 4.6,
         hitFlash: 0,
+        bounty: false,
+        bountyBoosted: false,
+        enraged: false,
         dead: false
       };
       state.enemies.push(enemy);
@@ -3093,7 +3336,10 @@
         firePlayerBullet(player, player.angle + offset, heavy && i === Math.floor(count / 2), 1);
       }
 
-      player.fireCooldown = Math.max(0.08, 0.26 - player.firerate * 0.028) * (player.overdriveActive > 0 ? 0.56 : 1);
+      player.fireCooldown =
+        Math.max(0.08, 0.26 - player.firerate * 0.028) *
+        (player.overdriveActive > 0 ? 0.56 : 1) *
+        (player.rushActive > 0 ? 0.8 : 1);
       player.vx -= Math.cos(player.angle) * (heavy ? 16 : 7);
       player.vy -= Math.sin(player.angle) * (heavy ? 16 : 7);
       burst(player.x + Math.cos(player.angle) * 16, player.y + Math.sin(player.angle) * 16, heavy ? "#ffc759" : "#74f5ff", heavy ? 10 : 6, heavy ? 0.9 : 0.55);
@@ -3132,7 +3378,10 @@
       player.vx += dx * (440 + player.thrust * 36);
       player.vy += dy * (440 + player.thrust * 36);
       player.invuln = Math.max(player.invuln, 0.24);
-      player.dashCooldown = Math.max(1.25, 3.2 - player.thrust * 0.28 - player.overdriveActive * 0.1);
+      player.dashCooldown = Math.max(
+        0.95,
+        3.2 - player.thrust * 0.28 - player.overdriveActive * 0.1 - (player.rushActive > 0 ? 0.55 : 0)
+      );
       burst(player.x, player.y, "#ff67ba", 24, 1.2);
       audio.dash();
     }
@@ -3157,6 +3406,7 @@
       player.invuln = Math.max(0, player.invuln - dt);
       player.dashCooldown = Math.max(0, player.dashCooldown - dt);
       player.overdriveActive = Math.max(0, player.overdriveActive - dt);
+      player.rushActive = Math.max(0, player.rushActive - dt);
 
       const move = { x: 0, y: 0 };
       if (state.keys.has("w") || state.keys.has("arrowup")) move.y -= 1;
@@ -3184,8 +3434,10 @@
         move.y /= moveMag;
       }
 
-      const accel = 1040 + player.thrust * 130 + (player.overdriveActive > 0 ? 380 : 0);
-      const maxSpeed = 320 + player.thrust * 34 + (player.overdriveActive > 0 ? 120 : 0);
+      const accel =
+        1040 + player.thrust * 130 + (player.overdriveActive > 0 ? 380 : 0) + (player.rushActive > 0 ? 220 : 0);
+      const maxSpeed =
+        320 + player.thrust * 34 + (player.overdriveActive > 0 ? 120 : 0) + (player.rushActive > 0 ? 55 : 0);
       player.vx += move.x * accel * dt * moveStrength;
       player.vy += move.y * accel * dt * moveStrength;
       player.vx *= 1 / (1 + dt * 4.6);
@@ -3258,7 +3510,13 @@
         if (target && player.droneTimers[i] <= 0) {
           const shotAngle = Math.atan2(target.y - y, target.x - x);
           firePlayerBullet({ x, y }, shotAngle, false, 0.75);
-          player.droneTimers[i] = Math.max(0.26, 0.82 - player.drones * 0.05 - (player.overdriveActive > 0 ? 0.16 : 0));
+          player.droneTimers[i] = Math.max(
+            0.2,
+            0.82 -
+              player.drones * 0.05 -
+              (player.overdriveActive > 0 ? 0.16 : 0) -
+              (player.rushActive > 0 ? 0.14 : 0)
+          );
         }
       }
     }
@@ -3276,6 +3534,7 @@
       }
       player.health -= remaining;
       player.invuln = 0.72;
+      player.rushActive *= 0.35;
       state.cameraShake = Math.min(24, state.cameraShake + 10);
       state.pulseFlash = Math.max(state.pulseFlash, 0.16);
       burst(player.x, player.y, "#ff6868", 18, 1.1);
@@ -3312,6 +3571,7 @@
       if (state.combo === 25) {
         unlockAchievement("combo-25", "Excessive Behavior", "Twenty-five in a row. Boredom has been outnumbered.");
       }
+      return awarded;
     }
 
     function maybeDropPickup(enemy) {
@@ -3361,10 +3621,13 @@
     function killEnemy(enemy, source) {
       if (enemy.dead) return;
       enemy.dead = true;
-      awardKill(enemy);
+      const awarded = awardKill(enemy);
+      if (state.bounty.active && enemy.id === state.bounty.enemyId) {
+        claimBounty(enemy);
+      }
       maybeDropPickup(enemy);
       burst(enemy.x, enemy.y, enemy.color, enemy.type === "boss" ? 60 : 24, enemy.type === "boss" ? 2 : 1);
-      spawnFloatingText(enemy.x, enemy.y, "+" + enemy.score, enemy.color);
+      spawnFloatingText(enemy.x, enemy.y, "+" + awarded, enemy.color);
       audio.explode(enemy.type === "boss" ? 2.8 : 1);
 
       if (enemy.type === "splitter") {
@@ -3629,9 +3892,9 @@
         const dx = player.x - pickup.x;
         const dy = player.y - pickup.y;
         const dist = Math.hypot(dx, dy);
-        const magnetRadius = 110 + player.luck * 80;
+        const magnetRadius = 110 + player.luck * 80 + (player.rushActive > 0 ? 80 : 0);
         if (dist < magnetRadius) {
-          const strength = (1 - dist / magnetRadius) * (260 + player.luck * 120);
+          const strength = (1 - dist / magnetRadius) * (260 + player.luck * 120 + (player.rushActive > 0 ? 180 : 0));
           pickup.vx += (dx / (dist || 1)) * strength * dt;
           pickup.vy += (dy / (dist || 1)) * strength * dt;
         }
@@ -3694,6 +3957,7 @@
       syncSceneUi();
       closeLeaderboard();
       closeSettings();
+      clearBounty(0);
       state.lastRunScrap = Math.max(
         1,
         Math.floor(state.score / 1800) +
@@ -3709,7 +3973,12 @@
       ui.finalCombo.textContent = padScore(state.stats.longestCombo);
       ui.finalWave.textContent = padScore(state.stats.wavesCleared);
       ui.finalKills.textContent = padScore(state.stats.kills);
-      ui.resultsCopy.textContent = "Run over. You banked " + padScore(state.lastRunScrap) + " scrap for the hangar.";
+      ui.resultsCopy.textContent =
+        "Run over. You banked " +
+        padScore(state.lastRunScrap) +
+        " scrap and claimed " +
+        padScore(state.stats.bountiesClaimed) +
+        (state.stats.bountiesClaimed === 1 ? " bounty." : " bounties.");
       unlockAchievement("game-over", "Tested To Failure", "The machine eventually won, but it had to work for it.");
       fetchLeaderboard(true);
     }
@@ -3719,6 +3988,7 @@
       syncSceneUi();
       closeLeaderboard();
       closeSettings();
+      state.bounty = createBountyState();
       state.score = 0;
       state.wave = 0;
       state.combo = 0;
@@ -3768,6 +4038,7 @@
 
       if (state.phase === "running") {
         trySpawnWave(dt);
+        updateBounty(dt);
         updatePlayer(dt);
         updateDrones(dt);
         tryFire(dt);
@@ -3867,6 +4138,16 @@
     function renderPlayer() {
       const player = state.player;
       if (!player) return;
+
+      if (player.rushActive > 0 && player.overdriveActive <= 0) {
+        ctx.save();
+        ctx.strokeStyle = "rgba(246, 239, 207, " + (0.2 + Math.sin(state.time * 10) * 0.05) + ")";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.radius + 14 + Math.sin(state.time * 10) * 2, 0, TAU);
+        ctx.stroke();
+        ctx.restore();
+      }
 
       if (getMaxShield(player) > 0) {
         ctx.save();
@@ -4005,6 +4286,24 @@
           ctx.fillStyle = enemy.type === "boss" ? "#ffc759" : "#fff8de";
           ctx.fillRect(-enemy.radius, enemy.radius + 10, enemy.radius * 2 * hpRatio, 5);
         }
+
+        if (enemy.bounty) {
+          const pulse = Math.sin(state.time * 7) * 2;
+          ctx.strokeStyle = "#f6efcf";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(0, 0, enemy.radius + 12 + pulse, 0, TAU);
+          ctx.stroke();
+          ctx.fillStyle = "#f6efcf";
+          ctx.fillRect(-7, -enemy.radius - 20, 14, 4);
+          ctx.fillRect(-2, -enemy.radius - 26, 4, 16);
+        } else if (enemy.enraged) {
+          ctx.strokeStyle = "rgba(255, 104, 104, 0.9)";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(0, 0, enemy.radius + 8, 0, TAU);
+          ctx.stroke();
+        }
         ctx.restore();
       }
     }
@@ -4111,6 +4410,7 @@
       const player = state.player;
       ui.scoreValue.textContent = padScore(state.score);
       ui.waveValue.textContent = padScore(state.wave);
+      ui.comboValue.textContent = state.combo > 0 ? "x" + padScore(state.combo) : "0";
 
       if (player) {
         const hpRatio = player.health / Math.max(1, player.maxHealth);
@@ -4124,6 +4424,14 @@
         ui.healthText.textContent = Math.ceil(player.health) + " / " + player.maxHealth;
         ui.shieldText.textContent = maxShield > 0 ? Math.ceil(player.shield) + " / " + maxShield : "Offline";
         ui.driveText.textContent = player.overdriveActive > 0 ? "Burning" : player.overdrive >= 100 ? "Ready" : Math.floor(player.overdrive) + "%";
+        ui.rushText.textContent = player.rushActive > 0 ? player.rushActive.toFixed(1) + "s" : "Dormant";
+
+        const bountyEnemy = getBountyEnemy();
+        if (state.bounty.active && bountyEnemy) {
+          ui.bountyText.textContent = formatEnemyType(bountyEnemy.type) + " " + state.bounty.timer.toFixed(1) + "s";
+        } else {
+          ui.bountyText.textContent = state.phase === "running" ? (state.bounty.cooldown > 0 ? "Scanning" : "Seeking") : "Offline";
+        }
 
         ui.dashBtn.classList.toggle("ready", player.dashCooldown <= 0);
         ui.dashBtn.classList.toggle("disabled", player.dashCooldown > 0);
@@ -4139,6 +4447,8 @@
         ui.healthText.textContent = "100 / 100";
         ui.shieldText.textContent = "0 / 0";
         ui.driveText.textContent = "Charge it";
+        ui.rushText.textContent = "Dormant";
+        ui.bountyText.textContent = "Offline";
         ui.dashBtn.classList.remove("ready");
         ui.dashBtn.classList.add("disabled");
         ui.dashBtnText.textContent = "Ready";

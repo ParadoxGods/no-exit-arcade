@@ -12,6 +12,7 @@
 ## Core Systems
 - Pointer aim + keyboard movement, dash, and overdrive.
 - Waves with bosses every fourth round.
+- Marked bounty targets appear during runs. Killing them triggers `Reactor Rush`, a short buff to movement, fire rate, pickup magnetism, and overdrive gain.
 - Persistent hangar upgrades stored in `state.meta.loadout`.
 - Flat UI direction: square corners, no UI glow, no UI gradients.
 - Audio is generated with the Web Audio API. Gunshot SFX are handled by `audio.shoot()` and `audio.heavyShot()`.
@@ -46,3 +47,4 @@
 2. Verify `leaderboard.json` is being updated by the action after a score issue is opened.
 3. If a score disappears unexpectedly, check the Actions tab and the moderation script logic in `scripts/leaderboard-core.mjs`.
 4. If gameplay changes add new score fields, update both `buildLeaderboardIssueUrl()` and the validators in `scripts/leaderboard-core.mjs`.
+5. The current fun-loop additions are gameplay-only and do not alter score validation: `awardKill()` still uses the original kill/combo formula, while bounty/rush only affect combat flow.
