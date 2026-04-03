@@ -19,6 +19,9 @@
       --panel: rgba(10, 14, 27, 0.7);
       --panel-strong: rgba(11, 15, 30, 0.9);
       --shadow: 0 18px 60px rgba(0, 0, 0, 0.42);
+      --font-ui: "Aptos", "Segoe UI Variable Text", "Segoe UI", "Candara", "Helvetica Neue", sans-serif;
+      --font-display: "Aptos Display", "Segoe UI Variable Display", "Segoe UI", "Candara", "Helvetica Neue", sans-serif;
+      --font-data: "Aptos", "Segoe UI Variable Text", "Segoe UI Semibold", "Segoe UI", sans-serif;
     }
 
     * {
@@ -38,7 +41,7 @@
         radial-gradient(circle at 50% 95%, rgba(255, 199, 89, 0.12), transparent 35%),
         linear-gradient(180deg, var(--bg), var(--bg-deep));
       color: var(--ink);
-      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-family: var(--font-ui);
       touch-action: none;
       user-select: none;
     }
@@ -155,11 +158,12 @@
     }
 
     .brand-title {
-      font-family: Impact, "Arial Black", sans-serif;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
+      font-family: var(--font-display);
+      font-weight: 700;
+      text-transform: none;
+      letter-spacing: 0.01em;
       font-size: clamp(28px, 4vw, 44px);
-      line-height: 0.94;
+      line-height: 0.98;
       margin: 0;
     }
 
@@ -200,11 +204,13 @@
     }
 
     .status-value {
-      font-family: Impact, "Arial Black", sans-serif;
+      font-family: var(--font-data);
+      font-weight: 700;
       font-size: 20px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      letter-spacing: 0.01em;
+      text-transform: none;
       color: var(--ink);
+      font-variant-numeric: tabular-nums;
     }
 
     .hunt-line {
@@ -232,9 +238,11 @@
     }
 
     .metric-value {
-      font-family: Impact, "Arial Black", sans-serif;
+      font-family: var(--font-data);
+      font-weight: 700;
       font-size: clamp(20px, 3vw, 30px);
-      letter-spacing: 0.06em;
+      letter-spacing: 0.01em;
+      font-variant-numeric: tabular-nums;
     }
 
     .meter {
@@ -360,10 +368,11 @@
     .screen h1,
     .screen h2 {
       margin: 0;
-      font-family: Impact, "Arial Black", sans-serif;
-      text-transform: uppercase;
-      line-height: 0.95;
-      letter-spacing: 0.08em;
+      font-family: var(--font-display);
+      font-weight: 700;
+      text-transform: none;
+      line-height: 1;
+      letter-spacing: 0.01em;
     }
 
     .screen h1 {
@@ -461,11 +470,13 @@
 
     .menu-kpi-value {
       margin-top: 8px;
-      font-family: Impact, "Arial Black", sans-serif;
+      font-family: var(--font-data);
+      font-weight: 700;
       font-size: clamp(20px, 4vw, 30px);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      letter-spacing: 0.01em;
+      text-transform: none;
       color: var(--ink);
+      font-variant-numeric: tabular-nums;
     }
 
     .menu-detail-list {
@@ -603,10 +614,11 @@
 
     .card-title {
       margin: 0;
-      font-family: Impact, "Arial Black", sans-serif;
-      text-transform: uppercase;
+      font-family: var(--font-display);
+      font-weight: 700;
+      text-transform: none;
       font-size: 20px;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.01em;
     }
 
     .card-text {
@@ -707,11 +719,13 @@
       justify-content: center;
       border: 1px solid rgba(255, 255, 255, 0.12);
       background: #05070c;
-      font-family: Impact, "Arial Black", sans-serif;
+      font-family: var(--font-data);
+      font-weight: 700;
       font-size: 24px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      letter-spacing: 0.01em;
+      text-transform: none;
       color: var(--ink);
+      font-variant-numeric: tabular-nums;
     }
 
     .stepper-btn {
@@ -775,11 +789,12 @@
     }
 
     .center-flash .line-b {
-      font-family: Impact, "Arial Black", sans-serif;
+      font-family: var(--font-display);
+      font-weight: 700;
       font-size: clamp(38px, 7vw, 78px);
-      line-height: 0.95;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
+      line-height: 0.98;
+      letter-spacing: 0.01em;
+      text-transform: none;
       text-shadow: 0 0 28px rgba(255, 255, 255, 0.12);
     }
 
@@ -1005,7 +1020,7 @@
     .screen-section-title {
       margin: 0;
       font-size: 12px;
-      letter-spacing: 0.22em;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--amber);
     }
@@ -1033,11 +1048,13 @@
     }
 
     .summary-value {
-      font-family: Impact, "Arial Black", sans-serif;
+      font-family: var(--font-data);
+      font-weight: 700;
       font-size: clamp(22px, 4vw, 34px);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      letter-spacing: 0.01em;
+      text-transform: none;
       color: var(--ink);
+      font-variant-numeric: tabular-nums;
     }
 
     .summary-copy {
@@ -1179,18 +1196,21 @@
     }
 
     .leaderboard-player {
-      font-family: Impact, "Arial Black", sans-serif;
+      font-family: var(--font-display);
+      font-weight: 700;
       font-size: 22px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      letter-spacing: 0.01em;
+      text-transform: none;
       color: var(--ink);
     }
 
     .leaderboard-score {
-      font-family: Impact, "Arial Black", sans-serif;
+      font-family: var(--font-data);
+      font-weight: 700;
       font-size: 26px;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.01em;
       color: var(--ink);
+      font-variant-numeric: tabular-nums;
     }
 
     .leaderboard-meta {
@@ -5698,7 +5718,7 @@
         if (particle.text) {
           ctx.fillStyle = particle.color;
           ctx.globalAlpha = alpha;
-          ctx.font = "700 16px 'Trebuchet MS', sans-serif";
+          ctx.font = "700 16px 'Aptos', 'Segoe UI', sans-serif";
           ctx.fillText(particle.text, particle.x, particle.y);
         } else {
           ctx.fillStyle = particle.color;
