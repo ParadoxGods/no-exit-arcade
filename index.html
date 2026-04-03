@@ -557,15 +557,15 @@
 
     .cards {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 22px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
     }
 
     .card {
       position: relative;
       overflow: hidden;
-      padding: 16px;
+      padding: 12px;
       border-radius: 22px;
       border: 1px solid rgba(255, 255, 255, 0.12);
       background:
@@ -596,31 +596,81 @@
 
     .card-tag {
       font-size: 11px;
-      letter-spacing: 0.24em;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--muted);
     }
 
     .card-title {
-      margin: 10px 0 8px;
+      margin: 0;
       font-family: Impact, "Arial Black", sans-serif;
       text-transform: uppercase;
-      font-size: 24px;
+      font-size: 20px;
       letter-spacing: 0.08em;
     }
 
     .card-text {
       color: var(--muted);
-      line-height: 1.45;
-      font-size: 14px;
+      line-height: 1.4;
+      font-size: 12px;
       min-height: 0;
     }
 
     .card-level {
-      margin-top: 12px;
+      margin-top: 0;
       color: var(--ink);
       font-size: 12px;
       letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .compact-card {
+      display: grid;
+      gap: 8px;
+      align-content: start;
+      min-height: 0;
+    }
+
+    .compact-card-top,
+    .compact-card-bottom {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: baseline;
+    }
+
+    .compact-card-bottom {
+      align-items: center;
+    }
+
+    .compact-card-status {
+      color: var(--ink);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-align: right;
+    }
+
+    .compact-card-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .compact-card-pill {
+      padding: 4px 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: #05070c;
+    }
+
+    .compact-card-note {
+      color: var(--ink);
+      font-size: 11px;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
     }
 
@@ -632,39 +682,40 @@
     }
 
     .shipyard-item {
-      padding: 16px;
+      padding: 12px;
       border: 1px solid rgba(255, 255, 255, 0.1);
       background: #0a0d14;
     }
 
     .shipyard-item .summary-copy {
-      min-height: 42px;
+      min-height: 0;
+      font-size: 12px;
     }
 
     .shipyard-stepper {
       display: grid;
-      grid-template-columns: 52px minmax(0, 1fr) 52px;
-      gap: 10px;
+      grid-template-columns: 44px minmax(0, 1fr) 44px;
+      gap: 8px;
       align-items: center;
-      margin-top: 14px;
+      margin-top: 10px;
     }
 
     .shipyard-stepper-value {
-      min-height: 52px;
+      min-height: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
       border: 1px solid rgba(255, 255, 255, 0.12);
       background: #05070c;
       font-family: Impact, "Arial Black", sans-serif;
-      font-size: 28px;
+      font-size: 24px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--ink);
     }
 
     .stepper-btn {
-      min-height: 52px;
+      min-height: 44px;
       border: 1px solid rgba(255, 255, 255, 0.12);
       background: #f6efcf;
       color: #05070c;
@@ -692,11 +743,10 @@
       background: #111620;
     }
 
-    .weapon-card .card-summary {
-      margin-top: 12px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.45;
+    .upgrade-card.disabled,
+    .weapon-card.disabled,
+    .compact-card.disabled {
+      opacity: 0.52;
     }
 
     .center-flash {
@@ -1107,10 +1157,6 @@
       width: 18px;
       height: 18px;
       margin: 0;
-    }
-
-    .upgrade-card.disabled {
-      opacity: 0.5;
     }
 
     .leaderboard-entry {
@@ -1716,7 +1762,7 @@
       </div>
       <div class="screen-section">
         <div class="screen-section-title">Shipyard</div>
-        <p class="screen-section-copy">Start from the base ship, spend the 500-point build budget, then slot in level-gated parts.</p>
+        <p class="screen-section-copy">Base ship first. Budget and level gates do the rest.</p>
       </div>
       <div class="shipyard-grid">
         <div class="shipyard-item">
@@ -1754,22 +1800,22 @@
       </div>
       <div class="screen-section">
         <div class="screen-section-title">Primary Weapon Part</div>
-        <p class="screen-section-copy">The base ship starts with the stock cannon. Better weapon parts unlock with pilot level.</p>
+        <p class="screen-section-copy">Swap the stock cannon once better parts unlock.</p>
       </div>
       <div class="cards" id="shipWeaponCards"></div>
       <div class="screen-section">
         <div class="screen-section-title">System Parts</div>
-        <p class="screen-section-copy" id="shipModuleCopy">Choose up to two system parts. Better modules unlock as the pilot levels up.</p>
+        <p class="screen-section-copy" id="shipModuleCopy">Choose up to two system parts.</p>
       </div>
       <div class="cards" id="shipModuleCards"></div>
       <div class="screen-section">
         <div class="screen-section-title">Hangar Upgrades</div>
-        <p class="screen-section-copy">Scrap buys permanent ship parts. More categories open as your pilot level rises.</p>
+        <p class="screen-section-copy">Permanent scrap upgrades for every run.</p>
       </div>
       <div class="cards" id="upgradeCards"></div>
       <div class="screen-section">
         <div class="screen-section-title">Pilot Skills</div>
-        <p class="screen-section-copy">XP levels the pilot. Each level grants one skill point for persistent pacing and survivability perks.</p>
+        <p class="screen-section-copy">Skill points shape pacing, survival, and flow.</p>
       </div>
       <div class="cards" id="skillCards"></div>
       <div class="screen-actions">
@@ -3535,6 +3581,77 @@
       return active.map((skill) => skill.title + " " + state.meta.skills[skill.id]).join(", ");
     }
 
+    function getWeaponCardCopy(id) {
+      return {
+        standard: "Balanced starter cannon",
+        scatter: "Wide pellet burst",
+        carbine: "Fast fire, low recoil",
+        rail: "Heavy lane pierce"
+      }[id] || "Weapon part";
+    }
+
+    function getModuleCardCopy(id) {
+      return {
+        shield_projector: "Adds a shield layer",
+        dash_jets: "Extra thrust routing",
+        recovery_plating: "More reserve hull",
+        pierce_chamber: "Pierce bonus",
+        drone_bay: "Deploys one drone",
+        chain_relay: "Arc chains on kills",
+        overdrive_capacitor: "Starts hotter"
+      }[id] || "System part";
+    }
+
+    function getUpgradeCardCopy(id) {
+      return {
+        multishot: "+2 side bolts",
+        firerate: "Faster trigger cycle",
+        thrust: "More accel and dash",
+        drones: "Adds drone wing",
+        pulse: "Rechargeable shield",
+        chain: "Kill arc chaining",
+        pierce: "More target pierce",
+        recovery: "More hull and heal",
+        luck: "Drops and pickup draw",
+        chaos: "Heavy bloom shots",
+        redline: "Faster overdrive loop"
+      }[id] || "Persistent upgrade";
+    }
+
+    function getSkillCardCopy(id) {
+      return {
+        flow: "Longer combo window",
+        pursuit: "Faster bounties",
+        magnetics: "Stronger pickup draw",
+        ignition: "More overdrive charge",
+        bulwark: "More hull stability"
+      }[id] || "Pilot skill";
+    }
+
+    function createCompactHangarCard({ className, color, tag, title, copy, status, pills = [], note = "", disabled = false, onClick = null }) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "card compact-card " + className + (disabled ? " disabled" : "");
+      button.style.setProperty("--card-color", color);
+      button.disabled = disabled;
+      button.innerHTML = `
+        <div class="compact-card-top">
+          <div class="card-tag">${tag}</div>
+          <div class="compact-card-status">${status}</div>
+        </div>
+        <div class="card-title">${title}</div>
+        <div class="card-text">${copy}</div>
+        <div class="compact-card-pills">${pills.map((pill) => `<span class="compact-card-pill">${pill}</span>`).join("")}</div>
+        <div class="compact-card-bottom">
+          <div class="compact-card-note">${note}</div>
+        </div>
+      `;
+      if (!disabled && typeof onClick === "function") {
+        button.addEventListener("click", onClick);
+      }
+      return button;
+    }
+
     function updateShipDesign(nextPartial) {
       if (state.phase !== "hangar") return false;
       const current = sanitizeShipDesign(state.meta.design);
@@ -4035,20 +4152,17 @@
       ui.hangarLevel.textContent = padScore(state.meta.level);
       ui.hangarSkillPoints.textContent = padScore(state.meta.skillPoints);
       ui.hangarXpCopy.textContent = padScore(progress.current) + " / " + padScore(progress.needed) + " XP to next level.";
-      ui.upgradeCopy.textContent =
-        "Progression is passive now: runs earn XP, levels grant skill points, and new hangar systems unlock over time.";
+      ui.upgradeCopy.textContent = "Tune the base ship, buy persistent upgrades, and spend skill points cleanly between runs.";
       ui.shipBudgetValue.textContent = padScore(budgetUsed) + " / " + padScore(SHIP_BUDGET);
       ui.shipBudgetCopy.textContent =
-        "Base ship with " +
         weapon.title +
-        ". " +
-        (budgetLeft > 0
-          ? padScore(budgetLeft) + " budget left. "
-          : "Budget maxed. ") +
+        " mounted. " +
+        padScore(Math.max(0, budgetLeft)) +
+        " left. " +
         design.modules.length +
-        " / " +
+        "/" +
         SHIP_MAX_MODULES +
-        " part slots used.";
+        " modules.";
       ui.shipArmorValue.textContent = String(design.armor);
       ui.shipSpeedValue.textContent = String(design.speed);
       ui.shipDamageValue.textContent = String(design.damage);
@@ -4065,39 +4179,39 @@
         const candidate = sanitizeShipDesign({ ...design, weapon: entry.id });
         const candidateCost = getShipDesignCost(candidate);
         const affordable = candidateCost <= SHIP_BUDGET;
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "card weapon-card" + (selected ? " selected" : "") + (!selected && (!unlocked || !affordable) ? " disabled" : "");
-        button.style.setProperty("--card-color", entry.color);
-        button.disabled = !selected && (!unlocked || !affordable);
-        button.innerHTML = `
-          <div class="card-tag">${entry.tag}</div>
-          <div class="card-title">${entry.title}</div>
-          <div class="card-text">${entry.desc}</div>
-          <div class="card-level">${
-            !unlocked
-              ? "Unlocks at Pilot Lv." + entry.unlockLevel
+        ui.shipWeaponCards.appendChild(
+          createCompactHangarCard({
+            className: "weapon-card" + (selected ? " selected" : ""),
+            color: entry.color,
+            tag: entry.tag,
+            title: entry.title,
+            copy: getWeaponCardCopy(entry.id),
+            status: !unlocked
+              ? "Lv " + entry.unlockLevel
               : selected
                 ? "Mounted"
                 : affordable
-                  ? "Cost " + padScore(entry.cost) + " Budget"
-                  : "Need " + padScore(candidateCost - SHIP_BUDGET) + " More Budget"
-          }</div>
-          <div class="card-summary">Base ship + weapon part ${padScore(entry.cost)} = ${padScore(candidateCost)} / ${padScore(SHIP_BUDGET)}</div>
-        `;
-        if (unlocked) {
-          button.addEventListener("click", () => updateShipDesign({ weapon: entry.id }));
-        }
-        ui.shipWeaponCards.appendChild(button);
+                  ? "Ready"
+                  : "Over Budget",
+            pills: [
+              "Cost " + padScore(entry.cost),
+              "Build " + padScore(candidateCost)
+            ],
+            note: !unlocked
+              ? "Unlocks at Pilot Lv. " + entry.unlockLevel
+              : selected
+                ? "Active weapon"
+                : affordable
+                  ? "Swap weapon"
+                  : "Need " + padScore(candidateCost - SHIP_BUDGET),
+            disabled: !selected && (!unlocked || !affordable),
+            onClick: unlocked ? () => updateShipDesign({ weapon: entry.id }) : null
+          })
+        );
       });
       ui.shipModuleCopy.textContent = design.modules.length
-        ? design.modules.length +
-          " / " +
-          SHIP_MAX_MODULES +
-          " slots used. " +
-          getShipModuleSummary(design) +
-          "."
-        : "Base hull only. Choose up to " + SHIP_MAX_MODULES + " system parts when you unlock them.";
+        ? design.modules.length + "/" + SHIP_MAX_MODULES + " active. " + getShipModuleSummary(design) + "."
+        : "Base hull only.";
       ui.shipModuleCards.innerHTML = "";
       MODULE_DEFS.forEach((entry) => {
         const selected = design.modules.includes(entry.id);
@@ -4107,32 +4221,39 @@
         const candidateCost = getShipDesignCost(candidate);
         const slotBlocked = !selected && design.modules.length >= SHIP_MAX_MODULES;
         const affordable = candidateCost <= SHIP_BUDGET;
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "card weapon-card" + (selected ? " selected" : "") + (!selected && (!unlocked || slotBlocked || !affordable) ? " disabled" : "");
-        button.style.setProperty("--card-color", entry.color);
-        button.disabled = !selected && (!unlocked || slotBlocked || !affordable);
-        button.innerHTML = `
-          <div class="card-tag">${entry.tag}</div>
-          <div class="card-title">${entry.title}</div>
-          <div class="card-text">${entry.desc}</div>
-          <div class="card-level">${
-            !unlocked
-              ? "Unlocks at Pilot Lv." + entry.unlockLevel
+        ui.shipModuleCards.appendChild(
+          createCompactHangarCard({
+            className: "weapon-card" + (selected ? " selected" : ""),
+            color: entry.color,
+            tag: entry.tag,
+            title: entry.title,
+            copy: getModuleCardCopy(entry.id),
+            status: !unlocked
+              ? "Lv " + entry.unlockLevel
               : selected
                 ? "Equipped"
                 : slotBlocked
-                  ? "System Bay Full"
+                  ? "Bay Full"
                   : affordable
-                    ? "Cost " + padScore(entry.cost) + " Budget"
-                    : "Need " + padScore(candidateCost - SHIP_BUDGET) + " More Budget"
-          }</div>
-          <div class="card-summary">${selected ? "Remove" : "Add"} system part. Total build becomes ${padScore(candidateCost)} / ${padScore(SHIP_BUDGET)}</div>
-        `;
-        if (unlocked) {
-          button.addEventListener("click", () => toggleShipModule(entry.id));
-        }
-        ui.shipModuleCards.appendChild(button);
+                    ? "Ready"
+                    : "Over Budget",
+            pills: [
+              "Cost " + padScore(entry.cost),
+              "Build " + padScore(candidateCost)
+            ],
+            note: !unlocked
+              ? "Unlocks at Pilot Lv. " + entry.unlockLevel
+              : selected
+                ? "Tap to remove"
+                : slotBlocked
+                  ? "Remove one module first"
+                  : affordable
+                    ? "Tap to equip"
+                    : "Need " + padScore(candidateCost - SHIP_BUDGET),
+            disabled: !selected && (!unlocked || slotBlocked || !affordable),
+            onClick: unlocked ? () => toggleShipModule(entry.id) : null
+          })
+        );
       });
       ui.upgradeCards.innerHTML = "";
       UPGRADE_DEFS.forEach((upgrade) => {
@@ -4141,26 +4262,35 @@
         const unlocked = isUpgradeUnlocked(upgrade);
         const isMaxed = level >= upgrade.max;
         const affordable = state.meta.scrap >= cost;
-        const button = document.createElement("button");
-        button.className = "card upgrade-card" + (!unlocked || isMaxed || !affordable ? " disabled" : "");
-        button.style.setProperty("--card-color", upgrade.color);
-        button.disabled = !unlocked || isMaxed || !affordable;
-        button.innerHTML = `
-          <div class="card-tag">${upgrade.tag}</div>
-          <div class="card-title">${upgrade.title}</div>
-          <div class="card-text">${upgrade.desc}</div>
-          <div class="card-level">${
-            !unlocked
-              ? "Unlocks at Pilot Lv." + upgrade.unlockLevel
+        ui.upgradeCards.appendChild(
+          createCompactHangarCard({
+            className: "upgrade-card",
+            color: upgrade.color,
+            tag: upgrade.tag,
+            title: upgrade.title,
+            copy: getUpgradeCardCopy(upgrade.id),
+            status: !unlocked
+              ? "Lv " + upgrade.unlockLevel
               : isMaxed
                 ? "Maxed"
-                : "Cost " + cost + " Scrap"
-          } | Current ${formatLevel(level)} / Max ${upgrade.max}</div>
-        `;
-        if (unlocked) {
-          button.addEventListener("click", () => buyUpgrade(upgrade.id));
-        }
-        ui.upgradeCards.appendChild(button);
+                : affordable
+                  ? "Buy"
+                  : "Need Scrap",
+            pills: [
+              "Lv " + level + " / " + upgrade.max,
+              !unlocked ? "Lock" : "Cost " + padScore(cost)
+            ],
+            note: !unlocked
+              ? "Unlocks at Pilot Lv. " + upgrade.unlockLevel
+              : isMaxed
+                ? "No more levels"
+                : affordable
+                  ? "Tap to install"
+                  : "Need " + padScore(cost - state.meta.scrap),
+            disabled: !unlocked || isMaxed || !affordable,
+            onClick: unlocked ? () => buyUpgrade(upgrade.id) : null
+          })
+        );
       });
 
       ui.skillCards.innerHTML = "";
@@ -4169,26 +4299,35 @@
         const unlocked = isSkillUnlocked(skill);
         const isMaxed = level >= skill.max;
         const affordable = state.meta.skillPoints > 0;
-        const button = document.createElement("button");
-        button.className = "card upgrade-card" + (!unlocked || isMaxed || !affordable ? " disabled" : "");
-        button.style.setProperty("--card-color", skill.color);
-        button.disabled = !unlocked || isMaxed || !affordable;
-        button.innerHTML = `
-          <div class="card-tag">${skill.tag}</div>
-          <div class="card-title">${skill.title}</div>
-          <div class="card-text">${skill.desc}</div>
-          <div class="card-level">${
-            !unlocked
-              ? "Unlocks at Pilot Lv." + skill.unlockLevel
+        ui.skillCards.appendChild(
+          createCompactHangarCard({
+            className: "upgrade-card",
+            color: skill.color,
+            tag: skill.tag,
+            title: skill.title,
+            copy: getSkillCardCopy(skill.id),
+            status: !unlocked
+              ? "Lv " + skill.unlockLevel
               : isMaxed
                 ? "Maxed"
-                : "Spend 1 Skill Point"
-          } | Current ${formatLevel(level)} / Max ${skill.max}</div>
-        `;
-        if (unlocked) {
-          button.addEventListener("click", () => buySkill(skill.id));
-        }
-        ui.skillCards.appendChild(button);
+                : affordable
+                  ? "Train"
+                  : "No Points",
+            pills: [
+              "Lv " + level + " / " + skill.max,
+              "1 Point"
+            ],
+            note: !unlocked
+              ? "Unlocks at Pilot Lv. " + skill.unlockLevel
+              : isMaxed
+                ? "Training complete"
+                : affordable
+                  ? "Tap to train"
+                  : "Level up for more",
+            disabled: !unlocked || isMaxed || !affordable,
+            onClick: unlocked ? () => buySkill(skill.id) : null
+          })
+        );
       });
     }
 
