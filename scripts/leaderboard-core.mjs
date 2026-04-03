@@ -15,14 +15,22 @@ export const UPGRADE_LIMITS = {
   multishot: 3,
   firerate: 4,
   thrust: 4,
-  drones: 3,
+  drones: 4,
   pulse: 3,
   chain: 3,
   pierce: 3,
-  recovery: 4,
+  recovery: 3,
   luck: 3,
-  chaos: 3,
+  chaos: 2,
   redline: 3
+};
+
+export const SKILL_LIMITS = {
+  flow: 3,
+  pursuit: 3,
+  magnetics: 3,
+  ignition: 3,
+  bulwark: 3
 };
 
 export function sanitizePlayerName(name) {
@@ -127,6 +135,7 @@ export function parseScoreIssue(issue) {
 
   const fields = parseLineFields(issue.body || "");
   const rawLoadout = parseAssignmentMap(fields.loadout);
+  const rawSkills = parseAssignmentMap(fields.skills);
   const rawKillBreakdown = parseAssignmentMap(fields.kill_breakdown);
 
   return {
@@ -146,7 +155,9 @@ export function parseScoreIssue(issue) {
     killScore: parseInteger(fields.kill_score),
     runMs: parseInteger(fields.run_ms),
     scrap: parseInteger(fields.scrap),
+    profileLevel: parseInteger(fields.profile_level),
     loadout: rawLoadout ? normalizeCountMap(rawLoadout, Object.keys(UPGRADE_LIMITS)) : null,
+    skills: rawSkills ? normalizeCountMap(rawSkills, Object.keys(SKILL_LIMITS)) : normalizeCountMap({}, Object.keys(SKILL_LIMITS)),
     killBreakdown: rawKillBreakdown ? normalizeCountMap(rawKillBreakdown, Object.keys(SCORE_VALUES)) : null,
     build: String(fields.build || "Base").slice(0, 120),
     timestamp: fields.timestamp || "",
@@ -168,7 +179,7 @@ export function validateScoreIssue(parsed) {
   if (!parsed.markerPresent) {
     reasons.push("Missing score marker.");
   }
-  if (parsed.version !== 2) {
+  if (parsed.version !== 2 && parsed.version !== 3) {
     reasons.push("Unsupported score payload version.");
   }
 
@@ -196,6 +207,9 @@ export function validateScoreIssue(parsed) {
   }
   if (!parsed.loadout) {
     reasons.push("Loadout payload is invalid.");
+  }
+  if (!parsed.skills) {
+    reasons.push("Skills payload is invalid.");
   }
   if (!parsed.killBreakdown) {
     reasons.push("Kill breakdown payload is invalid.");
@@ -231,6 +245,17 @@ export function validateScoreIssue(parsed) {
     if (!Number.isInteger(level) || level < 0 || level > limit) {
       reasons.push(`Loadout level is invalid for ${upgradeId}.`);
     }
+  }
+
+  for (const [skillId, limit] of Object.entries(SKILL_LIMITS)) {
+    const level = parsed.skills[skillId];
+    if (!Number.isInteger(level) || level < 0 || level > limit) {
+      reasons.push(`Skill level is invalid for ${skillId}.`);
+    }
+  }
+
+  if (parsed.profileLevel !== null && (!Number.isInteger(parsed.profileLevel) || parsed.profileLevel < 1)) {
+    reasons.push("Profile level is invalid.");
   }
 
   const waveScore = expectedWaveScore(parsed.waves);

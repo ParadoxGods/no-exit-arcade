@@ -1427,10 +1427,11 @@
             </p>
           </div>
           <div class="chips">
-            <div class="chip">Arena First</div>
-            <div class="chip">Persistent Loadout</div>
-            <div class="chip">Live Board</div>
-          </div>
+          <div class="chip">Arena First</div>
+          <div class="chip">Persistent Loadout</div>
+          <div class="chip">Pilot Levels</div>
+          <div class="chip">Live Board</div>
+        </div>
           <div class="screen-section">
             <div class="screen-section-title">Run Structure</div>
             <div class="summary-grid">
@@ -1511,17 +1512,26 @@
           <p class="summary-copy">Every upgrade here persists into the next run.</p>
         </div>
         <div class="summary-item">
-          <div class="summary-label">Loadout Rule</div>
-          <div class="summary-value">Focus</div>
-          <p class="summary-copy">Choose a lane and keep stacking it. Mixed builds are weaker early.</p>
+          <div class="summary-label">Pilot Level</div>
+          <div class="summary-value" id="hangarLevel">1</div>
+          <p class="summary-copy" id="hangarXpCopy">0 / 120 XP to next level.</p>
         </div>
         <div class="summary-item">
-          <div class="summary-label">Run Flow</div>
-          <div class="summary-value">Clean</div>
-          <p class="summary-copy">Combat starts only after you leave the hangar, so there is no mid-run shopping noise.</p>
+          <div class="summary-label">Skill Points</div>
+          <div class="summary-value" id="hangarSkillPoints">0</div>
+          <p class="summary-copy">Levels feed permanent pilot skills below.</p>
         </div>
       </div>
+      <div class="screen-section">
+        <div class="screen-section-title">Hangar Upgrades</div>
+        <p class="screen-section-copy">Scrap buys permanent ship parts. More categories open as your pilot level rises.</p>
+      </div>
       <div class="cards" id="upgradeCards"></div>
+      <div class="screen-section">
+        <div class="screen-section-title">Pilot Skills</div>
+        <p class="screen-section-copy">XP levels the pilot. Each level grants one skill point for persistent pacing and survivability perks.</p>
+      </div>
+      <div class="cards" id="skillCards"></div>
       <div class="screen-actions">
         <button class="action" id="hangarStartBtn">Start Run</button>
         <button class="action secondary" id="hangarMenuBtn">Back To Menu</button>
@@ -1707,6 +1717,7 @@
       shieldText: document.getElementById("shieldText"),
       driveText: document.getElementById("driveText"),
       upgradeCards: document.getElementById("upgradeCards"),
+      skillCards: document.getElementById("skillCards"),
       upgradeCopy: document.getElementById("upgradeCopy"),
       upgradeList: document.getElementById("upgradeList"),
       finalScore: document.getElementById("finalScore"),
@@ -1715,6 +1726,9 @@
       finalKills: document.getElementById("finalKills"),
       resultsCopy: document.getElementById("resultsCopy"),
       hangarCredits: document.getElementById("hangarCredits"),
+      hangarLevel: document.getElementById("hangarLevel"),
+      hangarXpCopy: document.getElementById("hangarXpCopy"),
+      hangarSkillPoints: document.getElementById("hangarSkillPoints"),
       hangarStartBtn: document.getElementById("hangarStartBtn"),
       hangarMenuBtn: document.getElementById("hangarMenuBtn"),
       hangarBtn: document.getElementById("hangarBtn"),
@@ -1771,8 +1785,32 @@
       return level <= 0 ? "Base" : "Lv." + level;
     }
 
+    function xpForNextLevel(level) {
+      const step = Math.max(0, level - 1);
+      return 120 + step * 55 + step * step * 10;
+    }
+
+    function xpTotalForLevel(level) {
+      let total = 0;
+      for (let current = 1; current < level; current += 1) {
+        total += xpForNextLevel(current);
+      }
+      return total;
+    }
+
+    function getProfileProgress(level = state.meta.level, xp = state.meta.xp) {
+      const currentFloor = xpTotalForLevel(level);
+      const nextFloor = xpTotalForLevel(level + 1);
+      return {
+        current: xp - currentFloor,
+        needed: nextFloor - currentFloor,
+        ratio: clamp((xp - currentFloor) / Math.max(1, nextFloor - currentFloor), 0, 1)
+      };
+    }
+
     const SETTINGS_KEY = "no-exit-arcade-settings-v1";
     const PLAYER_KEY = "no-exit-arcade-player-v1";
+    const PROFILE_KEY = "no-exit-arcade-profile-v1";
     const LEADERBOARD_CONFIG = {
       owner: "ParadoxGods",
       repo: "no-exit-arcade",
@@ -1809,6 +1847,36 @@
       }
     }
 
+    function loadStoredProfile() {
+      try {
+        const raw = localStorage.getItem(PROFILE_KEY);
+        if (!raw) return createDefaultProfile();
+        const parsed = JSON.parse(raw);
+        return {
+          ...createDefaultProfile(),
+          ...parsed,
+          loadout: {
+            ...createEmptyLoadout(),
+            ...(parsed.loadout || {})
+          },
+          skills: {
+            ...createEmptySkills(),
+            ...(parsed.skills || {})
+          }
+        };
+      } catch (error) {
+        return createDefaultProfile();
+      }
+    }
+
+    function persistProfile() {
+      try {
+        localStorage.setItem(PROFILE_KEY, JSON.stringify(state.meta));
+      } catch (error) {
+        // Ignore storage failures and keep the current session profile.
+      }
+    }
+
     function getQualityProfile() {
       const quality = state.settings ? state.settings.quality : "high";
       if (quality === "low") {
@@ -1833,6 +1901,27 @@
         luck: 0,
         chaos: 0,
         redline: 0
+      };
+    }
+
+    function createEmptySkills() {
+      return {
+        flow: 0,
+        pursuit: 0,
+        magnetics: 0,
+        ignition: 0,
+        bulwark: 0
+      };
+    }
+
+    function createDefaultProfile() {
+      return {
+        scrap: 0,
+        xp: 0,
+        level: 1,
+        skillPoints: 0,
+        loadout: createEmptyLoadout(),
+        skills: createEmptySkills()
       };
     }
 
@@ -1877,6 +1966,7 @@
         title: "Prism Fork",
         tag: "Weapon",
         color: "#74f5ff",
+        unlockLevel: 1,
         desc: "Add two extra side bolts to every trigger pull. This is how good judgment leaves the room.",
         max: 3,
         apply(player) {
@@ -1888,6 +1978,7 @@
         title: "Overclock Coils",
         tag: "Tempo",
         color: "#ffc759",
+        unlockLevel: 1,
         desc: "Fire faster and kick the soundtrack a little harder every time you commit to the bit.",
         max: 4,
         apply(player) {
@@ -1899,6 +1990,7 @@
         title: "Ion Skates",
         tag: "Movement",
         color: "#8aff8f",
+        unlockLevel: 1,
         desc: "More acceleration, more top speed, shorter dash cooldown. Cowardice becomes a mobility tool.",
         max: 4,
         apply(player) {
@@ -1910,6 +2002,7 @@
         title: "Drone Choir",
         tag: "Orbit",
         color: "#ff67ba",
+        unlockLevel: 4,
         desc: "Add an orbiting turret drone. It shoots for you and looks smug while doing it.",
         max: 4,
         apply(player) {
@@ -1924,6 +2017,7 @@
         title: "Pulse Armor",
         tag: "Defense",
         color: "#74f5ff",
+        unlockLevel: 2,
         desc: "Gain a shield pool that recharges over time and emits a shock pulse when things get too intimate.",
         max: 3,
         apply(player) {
@@ -1936,6 +2030,7 @@
         title: "Static Gossip",
         tag: "Cascade",
         color: "#ff67ba",
+        unlockLevel: 5,
         desc: "Kills arc damage to nearby enemies, spreading the bad news with neon enthusiasm.",
         max: 3,
         apply(player) {
@@ -1947,6 +2042,7 @@
         title: "Needle Lattice",
         tag: "Precision",
         color: "#ffc759",
+        unlockLevel: 3,
         desc: "Your shots punch through more targets. Straight lines are suddenly a lifestyle.",
         max: 3,
         apply(player) {
@@ -1958,6 +2054,7 @@
         title: "Second Wind",
         tag: "Sustain",
         color: "#8aff8f",
+        unlockLevel: 1,
         desc: "Increase max health and patch yourself up. A practical mutation, somehow.",
         max: 3,
         apply(player) {
@@ -1971,6 +2068,7 @@
         title: "Lucky Magnet",
         tag: "Economy",
         color: "#74f5ff",
+        unlockLevel: 2,
         desc: "Pickups appear more often and vacuum into you from farther away. Very dignified behavior.",
         max: 3,
         apply(player) {
@@ -1982,6 +2080,7 @@
         title: "Chaos Bloom",
         tag: "Burst",
         color: "#ffc759",
+        unlockLevel: 6,
         desc: "Every few shots erupt into a heavier blossom round with more size, damage, and confidence.",
         max: 2,
         apply(player) {
@@ -1993,10 +2092,80 @@
         title: "Redline Heart",
         tag: "Overdrive",
         color: "#ff67ba",
+        unlockLevel: 7,
         desc: "Build overdrive faster and stay in it longer. Sensible restraint is no longer on the roadmap.",
         max: 3,
         apply(player) {
           player.redline += 1;
+        }
+      }
+    ];
+
+    const SKILL_DEFS = [
+      {
+        id: "flow",
+        title: "Flow State",
+        tag: "Rhythm",
+        color: "#74f5ff",
+        unlockLevel: 2,
+        max: 3,
+        desc: "Combo windows stretch out and dash recovery tightens up. The run stops feeling slippery.",
+        apply(player, level) {
+          player.comboGrace += level * 0.35;
+          player.dashSkill += level * 0.08;
+        }
+      },
+      {
+        id: "pursuit",
+        title: "Hot Pursuit",
+        tag: "Hunt",
+        color: "#ffc759",
+        unlockLevel: 3,
+        max: 3,
+        desc: "Marked targets appear faster and Reactor Rush lasts longer once you claim them.",
+        apply(player, level) {
+          player.rushBonus += level * 0.9;
+          player.bountyFocus += level;
+        }
+      },
+      {
+        id: "magnetics",
+        title: "Field Draw",
+        tag: "Utility",
+        color: "#8aff8f",
+        unlockLevel: 4,
+        max: 3,
+        desc: "Pickups pull in harder and drop a little more often, which keeps the arena flowing.",
+        apply(player, level) {
+          player.magnetBonus += level * 28;
+          player.dropBonus += level * 0.03;
+        }
+      },
+      {
+        id: "ignition",
+        title: "Ignition Loop",
+        tag: "Reactor",
+        color: "#ff67ba",
+        unlockLevel: 5,
+        max: 3,
+        desc: "Start closer to overdrive and charge it faster from kills, bounties, and pickups.",
+        apply(player, level) {
+          player.startDrive += level * 10;
+          player.driveGainBonus += level * 0.08;
+        }
+      },
+      {
+        id: "bulwark",
+        title: "Keep The Run",
+        tag: "Survival",
+        color: "#f6efcf",
+        unlockLevel: 6,
+        max: 3,
+        desc: "More hull and less Reactor Rush lost when you get clipped. The run survives more mistakes.",
+        apply(player, level) {
+          player.maxHealth += level * 8;
+          player.health += level * 8;
+          player.rushRetention += level * 0.18;
         }
       }
     ];
@@ -2058,11 +2227,10 @@
       },
       bounty: createBountyState(),
       upgradeChoices: [],
-      meta: {
-        scrap: 0,
-        loadout: createEmptyLoadout()
-      },
+      meta: loadStoredProfile(),
       lastRunScrap: 0,
+      lastRunXp: 0,
+      lastRunLevelUps: 0,
       settings: loadStoredSettings(),
       playerName: getSavedPlayerName(),
       leaderboard: {
@@ -2334,10 +2502,27 @@
         luck: loadout.luck,
         chaos: loadout.chaos,
         redline: loadout.redline,
+        comboGrace: 0,
+        dashSkill: 0,
+        rushBonus: 0,
+        bountyFocus: 0,
+        magnetBonus: 0,
+        dropBonus: 0,
+        startDrive: 0,
+        driveGainBonus: 0,
+        rushRetention: 0,
         droneTimers: [],
         dronePositions: []
       };
+      for (const skill of SKILL_DEFS) {
+        const level = state.meta.skills[skill.id];
+        if (level > 0) {
+          skill.apply(player, level);
+        }
+      }
       player.shield = getMaxShield(player);
+      player.health = player.maxHealth;
+      player.overdrive = clamp(player.startDrive, 0, 100);
       while (player.droneTimers.length < player.drones) {
         player.droneTimers.push(rand(0.1, 0.7));
       }
@@ -2359,12 +2544,22 @@
       );
     }
 
+    function getBountyCooldown(baseSeconds) {
+      const player = state.player;
+      return Math.max(0.8, baseSeconds - (player ? player.bountyFocus * 0.18 : 0));
+    }
+
+    function addDriveCharge(player, amount) {
+      if (!player) return;
+      player.overdrive = clamp(player.overdrive + amount * (1 + player.driveGainBonus), 0, 100);
+    }
+
     function getBountyEnemy() {
       if (!state.bounty.active || !state.bounty.enemyId) return null;
       return state.enemies.find((enemy) => enemy.id === state.bounty.enemyId && !enemy.dead) || null;
     }
 
-    function clearBounty(cooldown = 1.8) {
+    function clearBounty(cooldown = getBountyCooldown(1.8)) {
       const enemy = getBountyEnemy();
       if (enemy) {
         enemy.bounty = false;
@@ -2388,7 +2583,9 @@
       }
       state.bounty.active = true;
       state.bounty.enemyId = enemy.id;
-      state.bounty.timer = enemy.type === "boss" ? 18 : 10.5 + Math.min(4, state.wave * 0.35);
+      state.bounty.timer =
+        (enemy.type === "boss" ? 18 : 10.5 + Math.min(4, state.wave * 0.35)) +
+        (state.player ? state.player.bountyFocus * 0.45 : 0);
       state.bounty.cooldown = 0;
       spawnFloatingText(enemy.x, enemy.y - enemy.radius - 16, "MARKED", "#f6efcf");
     }
@@ -2427,16 +2624,16 @@
       state.bounty.active = false;
       state.bounty.enemyId = 0;
       state.bounty.timer = 0;
-      state.bounty.cooldown = 4.2;
+      state.bounty.cooldown = getBountyCooldown(4.2);
     }
 
     function claimBounty(enemy) {
       const player = state.player;
       if (!player) return;
 
-      const rushGain = enemy.type === "boss" ? 8.5 : 4.8;
+      const rushGain = (enemy.type === "boss" ? 8.5 : 4.8) + player.rushBonus;
       player.rushActive = Math.min(18, player.rushActive + rushGain);
-      player.overdrive = clamp(player.overdrive + (enemy.type === "boss" ? 36 : 22) + player.redline * 2, 0, 100);
+      addDriveCharge(player, (enemy.type === "boss" ? 36 : 22) + player.redline * 2);
       player.health = Math.min(player.maxHealth, player.health + (enemy.type === "boss" ? 12 : 6));
       player.shield = Math.min(getMaxShield(player), player.shield + (enemy.type === "boss" ? 20 : 10));
       state.comboTimer = Math.max(state.comboTimer, 4.2);
@@ -2452,7 +2649,7 @@
       } else if (state.stats.bountiesClaimed === 1) {
         toast("Reactor Rush", "Marked kills now spike movement, fire rate, and drive charge.");
       }
-      clearBounty(2.8);
+      clearBounty(getBountyCooldown(2.8));
     }
 
     function updateBounty(dt) {
@@ -2479,7 +2676,7 @@
       if (target) {
         markBountyTarget(target);
       } else {
-        state.bounty.cooldown = 1.2;
+        state.bounty.cooldown = getBountyCooldown(1.2);
       }
     }
 
@@ -2606,6 +2803,41 @@
       applySettings();
     }
 
+    function computeRunXp() {
+      return Math.max(
+        18,
+        Math.floor(state.score / 160) +
+          state.stats.wavesCleared * 14 +
+          state.stats.bossesSlain * 30 +
+          state.stats.bountiesClaimed * 12 +
+          Math.floor(state.stats.kills / 10)
+      );
+    }
+
+    function gainProfileXp(amount) {
+      state.meta.xp += amount;
+      let levelsGained = 0;
+      const unlockedNames = [];
+      while (state.meta.xp >= xpTotalForLevel(state.meta.level + 1)) {
+        state.meta.level += 1;
+        state.meta.skillPoints += 1;
+        levelsGained += 1;
+        unlockedNames.push(
+          ...UPGRADE_DEFS.filter((upgrade) => upgrade.unlockLevel === state.meta.level).map((upgrade) => upgrade.title),
+          ...SKILL_DEFS.filter((skill) => skill.unlockLevel === state.meta.level).map((skill) => skill.title)
+        );
+      }
+
+      if (levelsGained > 0) {
+        const unlockText = unlockedNames.length
+          ? "Unlocked " + unlockedNames.slice(0, 3).join(", ") + (unlockedNames.length > 3 ? "..." : ".")
+          : "Skill point ready in the hangar.";
+        toast("Pilot Level " + state.meta.level, unlockText);
+      }
+
+      return levelsGained;
+    }
+
     function openSettings() {
       closeLeaderboard();
       renderSettingsUi();
@@ -2644,14 +2876,29 @@
       }
     }
 
+    function getSkillSummary() {
+      const active = SKILL_DEFS.filter((skill) => state.meta.skills[skill.id] > 0);
+      if (!active.length) return "No Skills";
+      return active.map((skill) => skill.title + " " + state.meta.skills[skill.id]).join(", ");
+    }
+
     function getBuildSummary() {
-      const active = UPGRADE_DEFS.filter((upgrade) => state.meta.loadout[upgrade.id] > 0);
-      if (!active.length) return "Base";
-      return active.map((upgrade) => upgrade.title + " " + state.meta.loadout[upgrade.id]).join(", ");
+      const parts = [];
+      const loadout = UPGRADE_DEFS.filter((upgrade) => state.meta.loadout[upgrade.id] > 0)
+        .map((upgrade) => upgrade.title + " " + state.meta.loadout[upgrade.id])
+        .join(", ");
+      const skills = getSkillSummary();
+      if (loadout) parts.push(loadout);
+      if (skills !== "No Skills") parts.push("Skills: " + skills);
+      return (parts.join(" | ") || "Base").slice(0, 120);
     }
 
     function getLoadoutSignature() {
       return UPGRADE_DEFS.map((upgrade) => `${upgrade.id}=${state.meta.loadout[upgrade.id]}`).join(",");
+    }
+
+    function getSkillSignature() {
+      return SKILL_DEFS.map((skill) => `${skill.id}=${state.meta.skills[skill.id]}`).join(",");
     }
 
     function getKillBreakdownSignature() {
@@ -2665,7 +2912,7 @@
       const title = `${LEADERBOARD_CONFIG.issuePrefix} ${Math.floor(state.score)} | ${player}`;
       const body = [
         "<!-- no-exit-arcade-score -->",
-        "version: 2",
+        "version: 3",
         `player: ${player}`,
         `score: ${Math.floor(state.score)}`,
         `waves: ${state.stats.wavesCleared}`,
@@ -2676,7 +2923,9 @@
         `kill_score: ${state.stats.killScore}`,
         `run_ms: ${Math.round(state.stats.runMs)}`,
         `scrap: ${state.lastRunScrap}`,
+        `profile_level: ${state.meta.level}`,
         `loadout: ${getLoadoutSignature()}`,
+        `skills: ${getSkillSignature()}`,
         `kill_breakdown: ${getKillBreakdownSignature()}`,
         `build: ${getBuildSummary()}`,
         `timestamp: ${new Date().toISOString()}`
@@ -2954,6 +3203,9 @@
       state.stats.waveScore = 0;
       state.stats.runMs = 0;
       state.stats.killBreakdown = createEmptyKillBreakdown();
+      state.lastRunScrap = 0;
+      state.lastRunXp = 0;
+      state.lastRunLevelUps = 0;
       state.player = buildPlayer();
       startWave(1);
       refreshUpgradeList();
@@ -2964,7 +3216,7 @@
     }
 
     function startWave(number) {
-      clearBounty(number === 1 ? 1.2 : 1.8);
+      clearBounty(getBountyCooldown(number === 1 ? 1.2 : 1.8));
       state.wave = number;
       state.waveTimer = 0;
       state.waveBoss = number % 4 === 0;
@@ -3007,6 +3259,31 @@
       return 2 + level * 2 + (upgrade.max >= 4 ? 1 : 0);
     }
 
+    function isUpgradeUnlocked(upgrade) {
+      return state.meta.level >= (upgrade.unlockLevel || 1);
+    }
+
+    function isSkillUnlocked(skill) {
+      return state.meta.level >= (skill.unlockLevel || 1);
+    }
+
+    function buySkill(id) {
+      const skill = SKILL_DEFS.find((entry) => entry.id === id);
+      if (!skill || state.phase !== "hangar") return;
+      if (!isSkillUnlocked(skill)) return;
+      const level = state.meta.skills[id];
+      if (level >= skill.max) return;
+      if (state.meta.skillPoints <= 0) {
+        toast("No Skill Points", "Level up to unlock more pilot training.");
+        return;
+      }
+      state.meta.skillPoints -= 1;
+      state.meta.skills[id] += 1;
+      persistProfile();
+      audio.upgrade();
+      renderHangarShop();
+    }
+
     function openHangar() {
       state.phase = "hangar";
       syncSceneUi();
@@ -3038,32 +3315,76 @@
 
     function renderHangarShop() {
       const loadout = state.meta.loadout;
+      const skills = state.meta.skills;
+      const progress = getProfileProgress();
       ui.hangarCredits.textContent = padScore(state.meta.scrap);
-      ui.upgradeCopy.textContent = "Spend scrap between runs if you want to. Everything you buy carries into the next arena.";
+      ui.hangarLevel.textContent = padScore(state.meta.level);
+      ui.hangarSkillPoints.textContent = padScore(state.meta.skillPoints);
+      ui.hangarXpCopy.textContent = padScore(progress.current) + " / " + padScore(progress.needed) + " XP to next level.";
+      ui.upgradeCopy.textContent =
+        "Progression is passive now: runs earn XP, levels grant skill points, and new hangar systems unlock over time.";
       ui.upgradeCards.innerHTML = "";
       UPGRADE_DEFS.forEach((upgrade) => {
         const level = loadout[upgrade.id];
         const cost = getUpgradeCost(upgrade.id);
+        const unlocked = isUpgradeUnlocked(upgrade);
         const isMaxed = level >= upgrade.max;
         const affordable = state.meta.scrap >= cost;
         const button = document.createElement("button");
-        button.className = "card upgrade-card" + (isMaxed || !affordable ? " disabled" : "");
+        button.className = "card upgrade-card" + (!unlocked || isMaxed || !affordable ? " disabled" : "");
         button.style.setProperty("--card-color", upgrade.color);
-        button.disabled = isMaxed || !affordable;
+        button.disabled = !unlocked || isMaxed || !affordable;
         button.innerHTML = `
           <div class="card-tag">${upgrade.tag}</div>
           <div class="card-title">${upgrade.title}</div>
           <div class="card-text">${upgrade.desc}</div>
-          <div class="card-level">${isMaxed ? "Maxed" : "Cost " + cost + " Scrap"} | Current ${formatLevel(level)} / Max ${upgrade.max}</div>
+          <div class="card-level">${
+            !unlocked
+              ? "Unlocks at Pilot Lv." + upgrade.unlockLevel
+              : isMaxed
+                ? "Maxed"
+                : "Cost " + cost + " Scrap"
+          } | Current ${formatLevel(level)} / Max ${upgrade.max}</div>
         `;
-        button.addEventListener("click", () => buyUpgrade(upgrade.id));
+        if (unlocked) {
+          button.addEventListener("click", () => buyUpgrade(upgrade.id));
+        }
         ui.upgradeCards.appendChild(button);
+      });
+
+      ui.skillCards.innerHTML = "";
+      SKILL_DEFS.forEach((skill) => {
+        const level = skills[skill.id];
+        const unlocked = isSkillUnlocked(skill);
+        const isMaxed = level >= skill.max;
+        const affordable = state.meta.skillPoints > 0;
+        const button = document.createElement("button");
+        button.className = "card upgrade-card" + (!unlocked || isMaxed || !affordable ? " disabled" : "");
+        button.style.setProperty("--card-color", skill.color);
+        button.disabled = !unlocked || isMaxed || !affordable;
+        button.innerHTML = `
+          <div class="card-tag">${skill.tag}</div>
+          <div class="card-title">${skill.title}</div>
+          <div class="card-text">${skill.desc}</div>
+          <div class="card-level">${
+            !unlocked
+              ? "Unlocks at Pilot Lv." + skill.unlockLevel
+              : isMaxed
+                ? "Maxed"
+                : "Spend 1 Skill Point"
+          } | Current ${formatLevel(level)} / Max ${skill.max}</div>
+        `;
+        if (unlocked) {
+          button.addEventListener("click", () => buySkill(skill.id));
+        }
+        ui.skillCards.appendChild(button);
       });
     }
 
     function buyUpgrade(id) {
       const upgrade = UPGRADE_DEFS.find((entry) => entry.id === id);
       if (!upgrade || state.phase !== "hangar") return;
+      if (!isUpgradeUnlocked(upgrade)) return;
       const level = state.meta.loadout[id];
       if (level >= upgrade.max) return;
       const cost = getUpgradeCost(id);
@@ -3073,6 +3394,7 @@
       }
       state.meta.scrap -= cost;
       state.meta.loadout[id] += 1;
+      persistProfile();
       audio.upgrade();
       refreshUpgradeList();
       renderHangarShop();
@@ -3380,7 +3702,11 @@
       player.invuln = Math.max(player.invuln, 0.24);
       player.dashCooldown = Math.max(
         0.95,
-        3.2 - player.thrust * 0.28 - player.overdriveActive * 0.1 - (player.rushActive > 0 ? 0.55 : 0)
+        3.2 -
+          player.thrust * 0.28 -
+          player.overdriveActive * 0.1 -
+          (player.rushActive > 0 ? 0.55 : 0) -
+          player.dashSkill
       );
       burst(player.x, player.y, "#ff67ba", 24, 1.2);
       audio.dash();
@@ -3534,7 +3860,7 @@
       }
       player.health -= remaining;
       player.invuln = 0.72;
-      player.rushActive *= 0.35;
+      player.rushActive *= clamp(0.35 + player.rushRetention, 0.35, 0.95);
       state.cameraShake = Math.min(24, state.cameraShake + 10);
       state.pulseFlash = Math.max(state.pulseFlash, 0.16);
       burst(player.x, player.y, "#ff6868", 18, 1.1);
@@ -3556,14 +3882,14 @@
       const awarded = Math.round(enemy.score * comboBoost);
       state.score += awarded;
       state.combo += 1;
-      state.comboTimer = 3.2;
+      state.comboTimer = 3.2 + player.comboGrace;
       state.stats.kills += 1;
       state.stats.longestCombo = Math.max(state.stats.longestCombo, state.combo);
       state.stats.killScore += awarded;
       if (state.stats.killBreakdown[enemy.type] !== undefined) {
         state.stats.killBreakdown[enemy.type] += 1;
       }
-      player.overdrive = clamp(player.overdrive + 7 + player.redline * 2 + (enemy.type === "boss" ? 30 : 0), 0, 100);
+      addDriveCharge(player, 7 + player.redline * 2 + (enemy.type === "boss" ? 30 : 0));
 
       if (state.combo === 12) {
         unlockAchievement("combo-12", "Combo Appetite", "Twelve hits chained. The machine approves.");
@@ -3576,7 +3902,7 @@
 
     function maybeDropPickup(enemy) {
       const player = state.player;
-      const chance = 0.09 + player.luck * 0.035 + (enemy.type === "boss" ? 1 : 0);
+      const chance = 0.09 + player.luck * 0.035 + player.dropBonus + (enemy.type === "boss" ? 1 : 0);
       if (Math.random() > chance && enemy.type !== "boss") return;
 
       const pool = [];
@@ -3892,9 +4218,11 @@
         const dx = player.x - pickup.x;
         const dy = player.y - pickup.y;
         const dist = Math.hypot(dx, dy);
-        const magnetRadius = 110 + player.luck * 80 + (player.rushActive > 0 ? 80 : 0);
+        const magnetRadius = 110 + player.luck * 80 + player.magnetBonus + (player.rushActive > 0 ? 80 : 0);
         if (dist < magnetRadius) {
-          const strength = (1 - dist / magnetRadius) * (260 + player.luck * 120 + (player.rushActive > 0 ? 180 : 0));
+          const strength =
+            (1 - dist / magnetRadius) *
+            (260 + player.luck * 120 + player.magnetBonus * 2 + (player.rushActive > 0 ? 180 : 0));
           pickup.vx += (dx / (dist || 1)) * strength * dt;
           pickup.vy += (dy / (dist || 1)) * strength * dt;
         }
@@ -3905,7 +4233,7 @@
           } else if (pickup.type === "shield") {
             player.shield = Math.min(getMaxShield(player), player.shield + 18);
           } else {
-            player.overdrive = clamp(player.overdrive + 14 + player.redline * 2, 0, 100);
+            addDriveCharge(player, 14 + player.redline * 2);
           }
           audio.pickup(pickup.type);
           burst(pickup.x, pickup.y, pickup.type === "heal" ? "#8aff8f" : pickup.type === "shield" ? "#74f5ff" : "#ffc759", 12, 0.7);
@@ -3958,6 +4286,8 @@
       closeLeaderboard();
       closeSettings();
       clearBounty(0);
+      state.lastRunXp = computeRunXp();
+      state.lastRunLevelUps = gainProfileXp(state.lastRunXp);
       state.lastRunScrap = Math.max(
         1,
         Math.floor(state.score / 1800) +
@@ -3966,6 +4296,7 @@
           Math.floor(state.stats.kills / 18)
       );
       state.meta.scrap += state.lastRunScrap;
+      persistProfile();
       audio.gameOver();
       showOverlay(ui.gameOver);
       hideOverlay(ui.upgrade);
@@ -3976,9 +4307,12 @@
       ui.resultsCopy.textContent =
         "Run over. You banked " +
         padScore(state.lastRunScrap) +
-        " scrap and claimed " +
+        " scrap, earned " +
+        padScore(state.lastRunXp) +
+        " XP, and claimed " +
         padScore(state.stats.bountiesClaimed) +
-        (state.stats.bountiesClaimed === 1 ? " bounty." : " bounties.");
+        (state.stats.bountiesClaimed === 1 ? " bounty." : " bounties.") +
+        (state.lastRunLevelUps > 0 ? " Pilot Level " + padScore(state.meta.level) + " reached." : "");
       unlockAchievement("game-over", "Tested To Failure", "The machine eventually won, but it had to work for it.");
       fetchLeaderboard(true);
     }
@@ -4005,6 +4339,8 @@
       resetMobileInputs();
       state.player = null;
       state.lastRunScrap = 0;
+      state.lastRunXp = 0;
+      state.lastRunLevelUps = 0;
       showOverlay(ui.menu);
       hideOverlay(ui.upgrade);
       hideOverlay(ui.gameOver);
