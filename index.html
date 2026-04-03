@@ -1785,6 +1785,12 @@
       return level <= 0 ? "Base" : "Lv." + level;
     }
 
+    function cycleLine(lines, seed) {
+      if (!lines.length) return "";
+      const index = ((seed % lines.length) + lines.length) % lines.length;
+      return lines[index];
+    }
+
     function xpForNextLevel(level) {
       const step = Math.max(0, level - 1);
       return 120 + step * 55 + step * step * 10;
@@ -1818,6 +1824,31 @@
     };
     const LEADERBOARD_POLL_MS = 15000;
     const LEADERBOARD_MIN_FETCH_MS = 10000;
+    const WAVE_FLASH_LINES = [
+      "Turn Boredom Into Sparks",
+      "Hold The Center",
+      "Break Their Formation",
+      "Push The Reactor Harder",
+      "Keep The Combo Alive",
+      "Nothing Here But Bad Ideas",
+      "Make The Room Regret This",
+      "Let The Arena Escalate"
+    ];
+    const BOSS_FLASH_LINES = [
+      "Warden Incoming",
+      "Heavy Contact",
+      "The Room Pushes Back",
+      "Containment Failed",
+      "Authority Has Arrived",
+      "Large Problem Detected"
+    ];
+    const WAVE_CLEAR_LINES = [
+      "Keep The Run Alive",
+      "Bank The Tempo",
+      "Stay Greedy",
+      "Pressure Maintained",
+      "Take The Next Wave Head On"
+    ];
 
     function createDefaultSettings() {
       return {
@@ -3227,7 +3258,9 @@
         : 14 + number * 5 + Math.floor(number * number * 0.55);
 
       const lead = state.waveBoss ? "Boss Wave" : "Wave " + number;
-      const main = state.waveBoss ? "Warden Incoming" : "Turn Boredom Into Sparks";
+      const main = state.waveBoss
+        ? cycleLine(BOSS_FLASH_LINES, Math.floor(number / 4) - 1)
+        : cycleLine(WAVE_FLASH_LINES, number - 1);
       showFlash(lead, main);
       if (state.waveBoss) {
         audio.boss();
@@ -3246,7 +3279,7 @@
       const player = state.player;
       player.health = Math.min(player.maxHealth, player.health + 10);
       player.shield = Math.min(getMaxShield(player), player.shield + 12);
-      showFlash("Wave Clear", "Keep The Run Alive");
+      showFlash("Wave Clear", cycleLine(WAVE_CLEAR_LINES, state.wave - 1));
       if (state.wave >= 6) {
         unlockAchievement("wave-six", "Still Here", "Six waves deep and the single HTML file is holding together.");
       }
