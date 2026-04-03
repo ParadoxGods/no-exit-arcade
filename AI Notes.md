@@ -14,9 +14,10 @@
 - Waves with bosses every fourth round.
 - Marked bounty targets appear during runs. Killing them triggers `Reactor Rush`, a short buff to movement, fire rate, pickup magnetism, and overdrive gain.
 - Persistent profile data is stored in `state.meta` and now includes `scrap`, `xp`, `level`, `skillPoints`, `loadout`, `skills`, ship `design`, and simple run `records`.
-- `state.meta.design` stores the shipyard build: selected weapon family plus point allocations for armor and speed.
-- The shipyard uses a fixed `12` point frame budget, so `weapon cost + armor + speed` can never exceed the cap.
-- Weapon families currently ship as `Pulse Driver`, `Scatter Array`, `Needle Carbine`, and `Rail Lance`.
+- `state.meta.design` stores the shipyard build: a base ship with point allocations for `armor`, `speed`, and `damage`, plus a selected primary weapon part and optional system parts.
+- The shipyard now uses a fixed `500` point build budget. Stats cost `25` each, and the player can mount up to `2` system parts.
+- Weapon parts currently ship as `Base Cannon`, `Scatter Array`, `Needle Carbine`, and `Rail Lance`.
+- System parts currently ship as `Shield Projector`, `Dash Jets`, `Recovery Plating`, `Pierce Chamber`, `Drone Bay`, `Chain Relay`, and `Overdrive Capacitor`.
 - Hangar upgrades are level-gated, and pilot skills are unlocked and purchased separately with skill points earned from leveling.
 - Flat UI direction: square corners, no UI glow, no UI gradients.
 - Audio is generated with the Web Audio API. Gunshot SFX are handled by `audio.shoot()` and `audio.heavyShot()`.
@@ -32,7 +33,7 @@
 - The results screen opens a prefilled issue composer with a score payload in the title/body.
 - GitHub Actions runs `scripts/moderate-score-issues.mjs` first, then `scripts/update-leaderboard.mjs`.
 - Score payloads now include versioned anti-cheat fields: bosses, wave score, kill score, run duration, loadout signature, skill signature, and kill breakdown.
-- Shipyard builds are now included in the score payload as `ship_design`, and the validator rejects submissions whose weapon/armor/speed combo exceeds the frame budget.
+- Shipyard builds are now included in the score payload as `ship_design`, and the validator rejects submissions whose budget, part slots, or level-gated parts do not match the live rules.
 - Invalid score issues are deleted with `SCORE_MOD_TOKEN` when that repo secret is present; otherwise the workflow closes them and excludes them from the feed.
 - The live page reads `leaderboard.json` and polls periodically so the board updates without exposing write credentials in the browser.
 

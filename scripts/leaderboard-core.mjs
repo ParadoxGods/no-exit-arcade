@@ -33,13 +33,48 @@ export const SKILL_LIMITS = {
   bulwark: 3
 };
 
-export const SHIP_BUDGET = 12;
-export const SHIP_STAT_LIMIT = 6;
-export const SHIP_WEAPON_COSTS = {
+export const SHIP_V4_BUDGET = 12;
+export const SHIP_V4_STAT_LIMIT = 6;
+export const SHIP_V4_WEAPON_COSTS = {
   pulse: 4,
   scatter: 3,
   carbine: 4,
   rail: 5
+};
+
+export const SHIP_V5_BUDGET = 500;
+export const SHIP_V5_STAT_LIMIT = 10;
+export const SHIP_V5_STAT_COST = 25;
+export const SHIP_V5_MAX_MODULES = 2;
+export const SHIP_V5_WEAPON_COSTS = {
+  standard: 0,
+  scatter: 90,
+  carbine: 120,
+  rail: 160
+};
+export const SHIP_V5_WEAPON_UNLOCKS = {
+  standard: 1,
+  scatter: 2,
+  carbine: 3,
+  rail: 5
+};
+export const SHIP_V5_MODULE_COSTS = {
+  shield_projector: 80,
+  dash_jets: 60,
+  recovery_plating: 70,
+  pierce_chamber: 85,
+  drone_bay: 110,
+  chain_relay: 95,
+  overdrive_capacitor: 100
+};
+export const SHIP_V5_MODULE_UNLOCKS = {
+  shield_projector: 2,
+  dash_jets: 2,
+  recovery_plating: 3,
+  pierce_chamber: 3,
+  drone_bay: 4,
+  chain_relay: 4,
+  overdrive_capacitor: 5
 };
 
 export function sanitizePlayerName(name) {
@@ -88,6 +123,10 @@ function parseShipDesign(raw) {
     if (!key || !value) return null;
     if (key === "weapon") {
       parsed.weapon = value;
+      continue;
+    }
+    if (key === "modules") {
+      parsed.modules = value.toLowerCase() === "none" ? [] : value.split("+").map((entry) => entry.trim()).filter(Boolean);
       continue;
     }
     const amount = parseInteger(value);
@@ -210,7 +249,7 @@ export function validateScoreIssue(parsed) {
   if (!parsed.markerPresent) {
     reasons.push("Missing score marker.");
   }
-  if (parsed.version !== 2 && parsed.version !== 3 && parsed.version !== 4) {
+  if (parsed.version !== 2 && parsed.version !== 3 && parsed.version !== 4 && parsed.version !== 5) {
     reasons.push("Unsupported score payload version.");
   }
 
@@ -292,26 +331,86 @@ export function validateScoreIssue(parsed) {
     reasons.push("Profile level is invalid.");
   }
 
-  if (parsed.version >= 4) {
+  if (parsed.version === 4) {
     const weapon = String(parsed.shipDesign.weapon || "").trim();
     const armor = parsed.shipDesign.armor;
     const speed = parsed.shipDesign.speed;
-    if (!(weapon in SHIP_WEAPON_COSTS)) {
+    if (!(weapon in SHIP_V4_WEAPON_COSTS)) {
       reasons.push("Ship weapon is invalid.");
     }
-    if (!Number.isInteger(armor) || armor < 0 || armor > SHIP_STAT_LIMIT) {
+    if (!Number.isInteger(armor) || armor < 0 || armor > SHIP_V4_STAT_LIMIT) {
       reasons.push("Ship armor allocation is invalid.");
     }
-    if (!Number.isInteger(speed) || speed < 0 || speed > SHIP_STAT_LIMIT) {
+    if (!Number.isInteger(speed) || speed < 0 || speed > SHIP_V4_STAT_LIMIT) {
       reasons.push("Ship speed allocation is invalid.");
     }
     if (
-      weapon in SHIP_WEAPON_COSTS &&
+      weapon in SHIP_V4_WEAPON_COSTS &&
       Number.isInteger(armor) &&
       Number.isInteger(speed) &&
-      SHIP_WEAPON_COSTS[weapon] + armor + speed > SHIP_BUDGET
+      SHIP_V4_WEAPON_COSTS[weapon] + armor + speed > SHIP_V4_BUDGET
     ) {
       reasons.push("Ship design exceeds the frame budget.");
+    }
+  }
+
+  if (parsed.version === 5) {
+    const weapon = String(parsed.shipDesign.weapon || "").trim();
+    const armor = parsed.shipDesign.armor;
+    const speed = parsed.shipDesign.speed;
+    const damage = parsed.shipDesign.damage;
+    const modules = Array.isArray(parsed.shipDesign.modules) ? parsed.shipDesign.modules : [];
+    if (!(weapon in SHIP_V5_WEAPON_COSTS)) {
+      reasons.push("Ship weapon is invalid.");
+    }
+    if (!Number.isInteger(armor) || armor < 0 || armor > SHIP_V5_STAT_LIMIT) {
+      reasons.push("Ship armor allocation is invalid.");
+    }
+    if (!Number.isInteger(speed) || speed < 0 || speed > SHIP_V5_STAT_LIMIT) {
+      reasons.push("Ship speed allocation is invalid.");
+    }
+    if (!Number.isInteger(damage) || damage < 0 || damage > SHIP_V5_STAT_LIMIT) {
+      reasons.push("Ship damage allocation is invalid.");
+    }
+    if (!Number.isInteger(parsed.profileLevel) || parsed.profileLevel < 1) {
+      reasons.push("Profile level is required for ship part validation.");
+    }
+    if (modules.length > SHIP_V5_MAX_MODULES) {
+      reasons.push("Too many system parts are equipped.");
+    }
+    if (new Set(modules).size !== modules.length) {
+      reasons.push("Duplicate system parts are not allowed.");
+    }
+    for (const moduleId of modules) {
+      if (!(moduleId in SHIP_V5_MODULE_COSTS)) {
+        reasons.push(`Ship module is invalid: ${moduleId}.`);
+        continue;
+      }
+      if (Number.isInteger(parsed.profileLevel) && parsed.profileLevel < SHIP_V5_MODULE_UNLOCKS[moduleId]) {
+        reasons.push(`Ship module is locked for the reported profile level: ${moduleId}.`);
+      }
+    }
+    if (
+      weapon in SHIP_V5_WEAPON_UNLOCKS &&
+      Number.isInteger(parsed.profileLevel) &&
+      parsed.profileLevel < SHIP_V5_WEAPON_UNLOCKS[weapon]
+    ) {
+      reasons.push("Ship weapon is locked for the reported profile level.");
+    }
+    if (
+      weapon in SHIP_V5_WEAPON_COSTS &&
+      Number.isInteger(armor) &&
+      Number.isInteger(speed) &&
+      Number.isInteger(damage)
+    ) {
+      const moduleCost = modules.reduce((sum, moduleId) => sum + (SHIP_V5_MODULE_COSTS[moduleId] || 0), 0);
+      const buildCost =
+        SHIP_V5_WEAPON_COSTS[weapon] +
+        moduleCost +
+        (armor + speed + damage) * SHIP_V5_STAT_COST;
+      if (buildCost > SHIP_V5_BUDGET) {
+        reasons.push("Ship design exceeds the base ship budget.");
+      }
     }
   }
 

@@ -626,7 +626,7 @@
 
     .shipyard-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 12px;
       margin-top: 22px;
     }
@@ -1659,11 +1659,11 @@
                 <div class="menu-detail-value" id="menuBuildBudget">12 / 12</div>
               </div>
               <div class="menu-detail-row">
-                <div class="menu-detail-label">Installed Upgrades</div>
+                <div class="menu-detail-label">System Parts</div>
                 <div class="menu-detail-value" id="menuBuildUpgrades">0</div>
               </div>
               <div class="menu-detail-row">
-                <div class="menu-detail-label">Pilot Skills</div>
+                <div class="menu-detail-label">Permanent Upgrades</div>
                 <div class="menu-detail-value" id="menuBuildSkills">0</div>
               </div>
             </div>
@@ -1716,13 +1716,13 @@
       </div>
       <div class="screen-section">
         <div class="screen-section-title">Shipyard</div>
-        <p class="screen-section-copy">Build the chassis before the run. Weapon, armor, and speed all draw from the same frame budget.</p>
+        <p class="screen-section-copy">Start from the base ship, spend the 500-point build budget, then slot in level-gated parts.</p>
       </div>
       <div class="shipyard-grid">
         <div class="shipyard-item">
-          <div class="summary-label">Frame Budget</div>
-          <div class="summary-value" id="shipBudgetValue">12 / 12</div>
-          <p class="summary-copy" id="shipBudgetCopy">Balanced build online.</p>
+          <div class="summary-label">Base Ship Budget</div>
+          <div class="summary-value" id="shipBudgetValue">500 / 500</div>
+          <p class="summary-copy" id="shipBudgetCopy">Base ship online.</p>
         </div>
         <div class="shipyard-item">
           <div class="summary-label">Armor Plates</div>
@@ -1742,12 +1742,26 @@
             <button class="stepper-btn" id="shipSpeedUpBtn" type="button" aria-label="Raise speed">+</button>
           </div>
         </div>
+        <div class="shipyard-item">
+          <div class="summary-label">Damage Tuning</div>
+          <p class="summary-copy">Damage points raise the base ship's raw shot output before weapon mods kick in.</p>
+          <div class="shipyard-stepper">
+            <button class="stepper-btn" id="shipDamageDownBtn" type="button" aria-label="Lower damage">-</button>
+            <div class="shipyard-stepper-value" id="shipDamageValue">4</div>
+            <button class="stepper-btn" id="shipDamageUpBtn" type="button" aria-label="Raise damage">+</button>
+          </div>
+        </div>
       </div>
       <div class="screen-section">
-        <div class="screen-section-title">Weapon Mount</div>
-        <p class="screen-section-copy">Each weapon changes the feel of the run and consumes part of the same build budget.</p>
+        <div class="screen-section-title">Primary Weapon Part</div>
+        <p class="screen-section-copy">The base ship starts with the stock cannon. Better weapon parts unlock with pilot level.</p>
       </div>
       <div class="cards" id="shipWeaponCards"></div>
+      <div class="screen-section">
+        <div class="screen-section-title">System Parts</div>
+        <p class="screen-section-copy" id="shipModuleCopy">Choose up to two system parts. Better modules unlock as the pilot levels up.</p>
+      </div>
+      <div class="cards" id="shipModuleCards"></div>
       <div class="screen-section">
         <div class="screen-section-title">Hangar Upgrades</div>
         <p class="screen-section-copy">Scrap buys permanent ship parts. More categories open as your pilot level rises.</p>
@@ -1972,11 +1986,16 @@
       shipBudgetCopy: document.getElementById("shipBudgetCopy"),
       shipArmorValue: document.getElementById("shipArmorValue"),
       shipSpeedValue: document.getElementById("shipSpeedValue"),
+      shipDamageValue: document.getElementById("shipDamageValue"),
       shipArmorDownBtn: document.getElementById("shipArmorDownBtn"),
       shipArmorUpBtn: document.getElementById("shipArmorUpBtn"),
       shipSpeedDownBtn: document.getElementById("shipSpeedDownBtn"),
       shipSpeedUpBtn: document.getElementById("shipSpeedUpBtn"),
+      shipDamageDownBtn: document.getElementById("shipDamageDownBtn"),
+      shipDamageUpBtn: document.getElementById("shipDamageUpBtn"),
       shipWeaponCards: document.getElementById("shipWeaponCards"),
+      shipModuleCopy: document.getElementById("shipModuleCopy"),
+      shipModuleCards: document.getElementById("shipModuleCards"),
       hangarStartBtn: document.getElementById("hangarStartBtn"),
       hangarMenuBtn: document.getElementById("hangarMenuBtn"),
       hangarBtn: document.getElementById("hangarBtn"),
@@ -2065,8 +2084,10 @@
     const SETTINGS_KEY = "no-exit-arcade-settings-v1";
     const PLAYER_KEY = "no-exit-arcade-player-v1";
     const PROFILE_KEY = "no-exit-arcade-profile-v1";
-    const SHIP_BUDGET = 12;
-    const SHIP_STAT_LIMIT = 6;
+    const SHIP_BUDGET = 500;
+    const SHIP_STAT_LIMIT = 10;
+    const SHIP_STAT_COST = 25;
+    const SHIP_MAX_MODULES = 2;
     const LEADERBOARD_CONFIG = {
       owner: "ParadoxGods",
       repo: "no-exit-arcade",
@@ -2215,9 +2236,11 @@
 
     function createDefaultShipDesign() {
       return {
-        weapon: "pulse",
+        weapon: "standard",
         armor: 4,
-        speed: 4
+        speed: 4,
+        damage: 4,
+        modules: []
       };
     }
 
@@ -2236,12 +2259,13 @@
 
     const WEAPON_DEFS = [
       {
-        id: "pulse",
-        title: "Pulse Driver",
-        tag: "Balanced",
+        id: "standard",
+        title: "Base Cannon",
+        tag: "Base Ship",
         color: "#74f5ff",
-        cost: 4,
-        desc: "The baseline reactor rifle. Steady cadence, clean bolts, no gimmicks.",
+        cost: 0,
+        unlockLevel: 1,
+        desc: "The stock blaster mounted on every base ship. Balanced, cheap, dependable.",
         shotDamageMul: 1,
         heavyDamageMul: 1,
         cooldownMul: 1,
@@ -2259,7 +2283,8 @@
         title: "Scatter Array",
         tag: "Close Range",
         color: "#ffc759",
-        cost: 3,
+        cost: 90,
+        unlockLevel: 2,
         desc: "Wide pellet spread with a faster trigger. Brutal up close, wasteful at range.",
         shotDamageMul: 0.44,
         heavyDamageMul: 0.76,
@@ -2278,7 +2303,8 @@
         title: "Needle Carbine",
         tag: "Rapid",
         color: "#8aff8f",
-        cost: 4,
+        cost: 120,
+        unlockLevel: 3,
         desc: "High rate, fast bolts, and low recoil. It wins by never shutting up.",
         shotDamageMul: 0.76,
         heavyDamageMul: 0.84,
@@ -2297,7 +2323,8 @@
         title: "Rail Lance",
         tag: "Piercing",
         color: "#ff67ba",
-        cost: 5,
+        cost: 160,
+        unlockLevel: 5,
         desc: "Slow, accurate, and vicious. Every shot wants to erase a straight line.",
         shotDamageMul: 1.55,
         heavyDamageMul: 1.42,
@@ -2313,31 +2340,159 @@
       }
     ];
 
+    const MODULE_DEFS = [
+      {
+        id: "shield_projector",
+        title: "Shield Projector",
+        tag: "Defense",
+        color: "#74f5ff",
+        cost: 80,
+        unlockLevel: 2,
+        desc: "Adds a baseline shield layer to the base hull.",
+        apply(player) {
+          player.pulse += 1;
+        }
+      },
+      {
+        id: "dash_jets",
+        title: "Dash Jets",
+        tag: "Mobility",
+        color: "#8aff8f",
+        cost: 60,
+        unlockLevel: 2,
+        desc: "Extra thrust routing for more aggressive dashes and acceleration.",
+        apply(player) {
+          player.thrust += 1;
+        }
+      },
+      {
+        id: "recovery_plating",
+        title: "Recovery Plating",
+        tag: "Defense",
+        color: "#f6efcf",
+        cost: 70,
+        unlockLevel: 3,
+        desc: "More reserve structure and recovery headroom for long runs.",
+        apply(player) {
+          player.recovery += 1;
+          player.maxHealth += 14;
+          player.health += 14;
+        }
+      },
+      {
+        id: "pierce_chamber",
+        title: "Pierce Chamber",
+        tag: "Offense",
+        color: "#ff6868",
+        cost: 85,
+        unlockLevel: 3,
+        desc: "Tightens the shot package so rounds keep traveling through targets.",
+        apply(player) {
+          player.pierce += 1;
+        }
+      },
+      {
+        id: "drone_bay",
+        title: "Drone Bay",
+        tag: "Support",
+        color: "#ff67ba",
+        cost: 110,
+        unlockLevel: 4,
+        desc: "Launches a support drone wing around the base ship.",
+        apply(player) {
+          player.drones += 1;
+        }
+      },
+      {
+        id: "chain_relay",
+        title: "Chain Relay",
+        tag: "Offense",
+        color: "#ffc759",
+        cost: 95,
+        unlockLevel: 4,
+        desc: "Lets impact arcs jump into a second target cluster.",
+        apply(player) {
+          player.chain += 1;
+        }
+      },
+      {
+        id: "overdrive_capacitor",
+        title: "Overdrive Capacitor",
+        tag: "Reactor",
+        color: "#ff67ba",
+        cost: 100,
+        unlockLevel: 5,
+        desc: "Starts the run hotter and feeds the reactor a bigger overdrive appetite.",
+        apply(player) {
+          player.redline += 1;
+          player.startDrive += 18;
+        }
+      }
+    ];
+
+    const LEGACY_WEAPON_MAP = {
+      pulse: "standard"
+    };
+
     function getWeaponDef(id = createDefaultShipDesign().weapon) {
-      return WEAPON_DEFS.find((weapon) => weapon.id === id) || WEAPON_DEFS[0];
+      const normalizedId = LEGACY_WEAPON_MAP[id] || id;
+      return WEAPON_DEFS.find((weapon) => weapon.id === normalizedId) || WEAPON_DEFS[0];
+    }
+
+    function getModuleDef(id) {
+      return MODULE_DEFS.find((module) => module.id === id) || null;
+    }
+
+    function isShipPartUnlocked(part, level = state.meta.level) {
+      return level >= (part.unlockLevel || 1);
     }
 
     function sanitizeShipDesign(source = {}) {
       const base = createDefaultShipDesign();
+      const rawModules = Array.isArray(source.modules)
+        ? source.modules
+        : typeof source.modules === "string" && source.modules
+          ? source.modules.split("+")
+          : [];
+      const modules = [];
+      rawModules.forEach((entry) => {
+        const module = getModuleDef(entry);
+        if (module && !modules.includes(module.id)) {
+          modules.push(module.id);
+        }
+      });
       return {
         weapon: getWeaponDef(source.weapon || base.weapon).id,
         armor: clamp(Math.round(Number(source.armor ?? base.armor) || 0), 0, SHIP_STAT_LIMIT),
-        speed: clamp(Math.round(Number(source.speed ?? base.speed) || 0), 0, SHIP_STAT_LIMIT)
+        speed: clamp(Math.round(Number(source.speed ?? base.speed) || 0), 0, SHIP_STAT_LIMIT),
+        damage: clamp(Math.round(Number(source.damage ?? base.damage) || 0), 0, SHIP_STAT_LIMIT),
+        modules
       };
     }
 
     function getShipDesignCost(design = state && state.meta ? state.meta.design : createDefaultShipDesign()) {
       const safe = sanitizeShipDesign(design);
-      return getWeaponDef(safe.weapon).cost + safe.armor + safe.speed;
+      const statCost = (safe.armor + safe.speed + safe.damage) * SHIP_STAT_COST;
+      const moduleCost = safe.modules.reduce((sum, id) => sum + (getModuleDef(id)?.cost || 0), 0);
+      return getWeaponDef(safe.weapon).cost + moduleCost + statCost;
     }
 
     function normalizeShipDesign(source = {}) {
       const normalized = sanitizeShipDesign(source);
+      while (normalized.modules.length > SHIP_MAX_MODULES) {
+        normalized.modules.pop();
+      }
       while (getShipDesignCost(normalized) > SHIP_BUDGET) {
-        if (normalized.speed >= normalized.armor && normalized.speed > 0) {
+        if (normalized.modules.length > 0) {
+          normalized.modules.pop();
+        } else if (normalized.damage >= normalized.speed && normalized.damage >= normalized.armor && normalized.damage > 0) {
+          normalized.damage -= 1;
+        } else if (normalized.speed >= normalized.armor && normalized.speed > 0) {
           normalized.speed -= 1;
         } else if (normalized.armor > 0) {
           normalized.armor -= 1;
+        } else if (normalized.weapon !== createDefaultShipDesign().weapon) {
+          normalized.weapon = createDefaultShipDesign().weapon;
         } else {
           return createDefaultShipDesign();
         }
@@ -2352,21 +2507,29 @@
     function getShipDesignSummary(design = state && state.meta ? state.meta.design : createDefaultShipDesign()) {
       const safe = sanitizeShipDesign(design);
       const weapon = getWeaponDef(safe.weapon);
-      return `${weapon.title} | Armor ${safe.armor} | Speed ${safe.speed}`;
+      return `${weapon.title} | Armor ${safe.armor} | Speed ${safe.speed} | Damage ${safe.damage}`;
     }
 
     function getShipDesignSignature(design = state && state.meta ? state.meta.design : createDefaultShipDesign()) {
       const safe = sanitizeShipDesign(design);
-      return `weapon=${safe.weapon},armor=${safe.armor},speed=${safe.speed}`;
+      return `weapon=${safe.weapon},armor=${safe.armor},speed=${safe.speed},damage=${safe.damage},modules=${safe.modules.length ? safe.modules.join("+") : "none"}`;
+    }
+
+    function getShipModuleSummary(design = state && state.meta ? state.meta.design : createDefaultShipDesign()) {
+      const safe = sanitizeShipDesign(design);
+      if (!safe.modules.length) return "Base hull only";
+      return safe.modules.map((id) => getModuleDef(id)?.title || id).join(", ");
     }
 
     function getNextUnlockSummary() {
-      const nextLevel = [...UPGRADE_DEFS, ...SKILL_DEFS]
+      const nextLevel = [...WEAPON_DEFS, ...MODULE_DEFS, ...UPGRADE_DEFS, ...SKILL_DEFS]
         .map((entry) => entry.unlockLevel || 1)
         .filter((level) => level > state.meta.level)
         .sort((a, b) => a - b)[0];
       if (!nextLevel) return "Full roster unlocked. Push the build harder.";
       const names = [
+        ...WEAPON_DEFS.filter((entry) => (entry.unlockLevel || 1) === nextLevel).map((entry) => entry.title),
+        ...MODULE_DEFS.filter((entry) => (entry.unlockLevel || 1) === nextLevel).map((entry) => entry.title),
         ...UPGRADE_DEFS.filter((entry) => (entry.unlockLevel || 1) === nextLevel).map((entry) => entry.title),
         ...SKILL_DEFS.filter((entry) => (entry.unlockLevel || 1) === nextLevel).map((entry) => entry.title)
       ];
@@ -2931,8 +3094,8 @@
         vy: 0,
         angle: -Math.PI / 2,
         radius: 16,
-        health: 68 + design.armor * 8 + loadout.recovery * 14,
-        maxHealth: 68 + design.armor * 8 + loadout.recovery * 14,
+        health: 76 + design.armor * 7 + loadout.recovery * 14,
+        maxHealth: 76 + design.armor * 7 + loadout.recovery * 14,
         shield: 0,
         invuln: 0,
         fireCooldown: 0,
@@ -2967,6 +3130,8 @@
         weaponColor: weapon.color,
         armorPoints: design.armor,
         speedPoints: design.speed,
+        damagePoints: design.damage,
+        modules: [...design.modules],
         droneTimers: [],
         dronePositions: []
       };
@@ -2976,6 +3141,12 @@
           skill.apply(player, level);
         }
       }
+      design.modules.forEach((id) => {
+        const module = getModuleDef(id);
+        if (module) {
+          module.apply(player);
+        }
+      });
       player.shield = getMaxShield(player);
       player.health = player.maxHealth;
       player.overdrive = clamp(player.startDrive, 0, 100);
@@ -3210,7 +3381,6 @@
       const design = normalizeShipDesign(state.meta.design);
       const buildCost = getShipDesignCost(design);
       const installedUpgrades = Object.values(state.meta.loadout).reduce((sum, level) => sum + (level > 0 ? 1 : 0), 0);
-      const trainedSkills = Object.values(state.meta.skills).reduce((sum, level) => sum + (level > 0 ? 1 : 0), 0);
       state.meta.records = records;
       state.meta.design = design;
       ui.menuBestScore.textContent = padScore(records.bestScore);
@@ -3222,9 +3392,9 @@
       ui.menuPilotScrap.textContent = padScore(state.meta.scrap);
       ui.menuPilotSkillPoints.textContent = padScore(state.meta.skillPoints);
       ui.menuCurrentBuild.textContent = getShipDesignSummary(design);
-      ui.menuBuildBudget.textContent = buildCost + " / " + SHIP_BUDGET + " Frame";
-      ui.menuBuildUpgrades.textContent = padScore(installedUpgrades) + " installed";
-      ui.menuBuildSkills.textContent = padScore(trainedSkills) + " trained";
+      ui.menuBuildBudget.textContent = padScore(buildCost) + " / " + padScore(SHIP_BUDGET) + " Budget";
+      ui.menuBuildUpgrades.textContent = getShipModuleSummary(design);
+      ui.menuBuildSkills.textContent = padScore(installedUpgrades) + " installed";
       ui.menuNextUnlock.textContent = getNextUnlockSummary();
     }
 
@@ -3370,13 +3540,15 @@
       const current = sanitizeShipDesign(state.meta.design);
       const candidate = sanitizeShipDesign({ ...current, ...nextPartial });
       if (getShipDesignCost(candidate) > SHIP_BUDGET) {
-        toast("Frame Budget Full", "Pull points out of armor or speed before installing that part.");
+        toast("Budget Full", "Pull points out of armor, speed, damage, or parts before adding more ship weight.");
         return false;
       }
       if (
         candidate.weapon === current.weapon &&
         candidate.armor === current.armor &&
-        candidate.speed === current.speed
+        candidate.speed === current.speed &&
+        candidate.damage === current.damage &&
+        candidate.modules.join("|") === current.modules.join("|")
       ) {
         return false;
       }
@@ -3394,9 +3566,30 @@
       return updateShipDesign({ [stat]: nextValue });
     }
 
+    function toggleShipModule(id) {
+      if (state.phase !== "hangar") return false;
+      const module = getModuleDef(id);
+      if (!module) return false;
+      if (!isShipPartUnlocked(module)) {
+        toast("Locked Part", "Reach Pilot Level " + module.unlockLevel + " to mount " + module.title + ".");
+        return false;
+      }
+      const current = sanitizeShipDesign(state.meta.design);
+      const selected = current.modules.includes(id);
+      const nextModules = selected
+        ? current.modules.filter((entry) => entry !== id)
+        : [...current.modules, id];
+      if (!selected && nextModules.length > SHIP_MAX_MODULES) {
+        toast("Part Bay Full", "The base ship only has room for " + SHIP_MAX_MODULES + " active system parts.");
+        return false;
+      }
+      return updateShipDesign({ modules: nextModules });
+    }
+
     function getBuildSummary() {
       const parts = [];
       parts.push(getShipDesignSummary());
+      parts.push("Parts: " + getShipModuleSummary());
       const loadout = UPGRADE_DEFS.filter((upgrade) => state.meta.loadout[upgrade.id] > 0)
         .map((upgrade) => upgrade.title + " " + state.meta.loadout[upgrade.id])
         .join(", ");
@@ -3425,7 +3618,7 @@
       const title = `${LEADERBOARD_CONFIG.issuePrefix} ${Math.floor(state.score)} | ${player}`;
       const body = [
         "<!-- no-exit-arcade-score -->",
-        "version: 4",
+        "version: 5",
         `player: ${player}`,
         `score: ${Math.floor(state.score)}`,
         `waves: ${state.stats.wavesCleared}`,
@@ -3844,43 +4037,102 @@
       ui.hangarXpCopy.textContent = padScore(progress.current) + " / " + padScore(progress.needed) + " XP to next level.";
       ui.upgradeCopy.textContent =
         "Progression is passive now: runs earn XP, levels grant skill points, and new hangar systems unlock over time.";
-      ui.shipBudgetValue.textContent = budgetUsed + " / " + SHIP_BUDGET;
+      ui.shipBudgetValue.textContent = padScore(budgetUsed) + " / " + padScore(SHIP_BUDGET);
       ui.shipBudgetCopy.textContent =
+        "Base ship with " +
         weapon.title +
-        " installed. " +
+        ". " +
         (budgetLeft > 0
-          ? budgetLeft + " frame point" + (budgetLeft === 1 ? "" : "s") + " still open."
-          : "Budget maxed and ready for launch.");
+          ? padScore(budgetLeft) + " budget left. "
+          : "Budget maxed. ") +
+        design.modules.length +
+        " / " +
+        SHIP_MAX_MODULES +
+        " part slots used.";
       ui.shipArmorValue.textContent = String(design.armor);
       ui.shipSpeedValue.textContent = String(design.speed);
+      ui.shipDamageValue.textContent = String(design.damage);
       ui.shipArmorDownBtn.disabled = design.armor <= 0;
       ui.shipSpeedDownBtn.disabled = design.speed <= 0;
-      ui.shipArmorUpBtn.disabled = design.armor >= SHIP_STAT_LIMIT || budgetLeft <= 0;
-      ui.shipSpeedUpBtn.disabled = design.speed >= SHIP_STAT_LIMIT || budgetLeft <= 0;
+      ui.shipDamageDownBtn.disabled = design.damage <= 0;
+      ui.shipArmorUpBtn.disabled = design.armor >= SHIP_STAT_LIMIT || budgetLeft < SHIP_STAT_COST;
+      ui.shipSpeedUpBtn.disabled = design.speed >= SHIP_STAT_LIMIT || budgetLeft < SHIP_STAT_COST;
+      ui.shipDamageUpBtn.disabled = design.damage >= SHIP_STAT_LIMIT || budgetLeft < SHIP_STAT_COST;
       ui.shipWeaponCards.innerHTML = "";
       WEAPON_DEFS.forEach((entry) => {
         const selected = entry.id === design.weapon;
-        const affordable = entry.cost + design.armor + design.speed <= SHIP_BUDGET;
+        const unlocked = isShipPartUnlocked(entry);
+        const candidate = sanitizeShipDesign({ ...design, weapon: entry.id });
+        const candidateCost = getShipDesignCost(candidate);
+        const affordable = candidateCost <= SHIP_BUDGET;
         const button = document.createElement("button");
         button.type = "button";
-        button.className = "card weapon-card" + (selected ? " selected" : "") + (!selected && !affordable ? " disabled" : "");
+        button.className = "card weapon-card" + (selected ? " selected" : "") + (!selected && (!unlocked || !affordable) ? " disabled" : "");
         button.style.setProperty("--card-color", entry.color);
-        button.disabled = !selected && !affordable;
+        button.disabled = !selected && (!unlocked || !affordable);
         button.innerHTML = `
           <div class="card-tag">${entry.tag}</div>
           <div class="card-title">${entry.title}</div>
           <div class="card-text">${entry.desc}</div>
           <div class="card-level">${
-            selected
-              ? "Installed"
-              : affordable
-                ? "Cost " + entry.cost + " Frame"
-                : "Need " + (entry.cost + design.armor + design.speed - SHIP_BUDGET) + " More Points"
+            !unlocked
+              ? "Unlocks at Pilot Lv." + entry.unlockLevel
+              : selected
+                ? "Mounted"
+                : affordable
+                  ? "Cost " + padScore(entry.cost) + " Budget"
+                  : "Need " + padScore(candidateCost - SHIP_BUDGET) + " More Budget"
           }</div>
-          <div class="card-summary">Armor ${design.armor} + Speed ${design.speed} + Weapon ${entry.cost} = ${entry.cost + design.armor + design.speed} / ${SHIP_BUDGET}</div>
+          <div class="card-summary">Base ship + weapon part ${padScore(entry.cost)} = ${padScore(candidateCost)} / ${padScore(SHIP_BUDGET)}</div>
         `;
-        button.addEventListener("click", () => updateShipDesign({ weapon: entry.id }));
+        if (unlocked) {
+          button.addEventListener("click", () => updateShipDesign({ weapon: entry.id }));
+        }
         ui.shipWeaponCards.appendChild(button);
+      });
+      ui.shipModuleCopy.textContent = design.modules.length
+        ? design.modules.length +
+          " / " +
+          SHIP_MAX_MODULES +
+          " slots used. " +
+          getShipModuleSummary(design) +
+          "."
+        : "Base hull only. Choose up to " + SHIP_MAX_MODULES + " system parts when you unlock them.";
+      ui.shipModuleCards.innerHTML = "";
+      MODULE_DEFS.forEach((entry) => {
+        const selected = design.modules.includes(entry.id);
+        const unlocked = isShipPartUnlocked(entry);
+        const nextModules = selected ? design.modules.filter((id) => id !== entry.id) : [...design.modules, entry.id];
+        const candidate = sanitizeShipDesign({ ...design, modules: nextModules });
+        const candidateCost = getShipDesignCost(candidate);
+        const slotBlocked = !selected && design.modules.length >= SHIP_MAX_MODULES;
+        const affordable = candidateCost <= SHIP_BUDGET;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "card weapon-card" + (selected ? " selected" : "") + (!selected && (!unlocked || slotBlocked || !affordable) ? " disabled" : "");
+        button.style.setProperty("--card-color", entry.color);
+        button.disabled = !selected && (!unlocked || slotBlocked || !affordable);
+        button.innerHTML = `
+          <div class="card-tag">${entry.tag}</div>
+          <div class="card-title">${entry.title}</div>
+          <div class="card-text">${entry.desc}</div>
+          <div class="card-level">${
+            !unlocked
+              ? "Unlocks at Pilot Lv." + entry.unlockLevel
+              : selected
+                ? "Equipped"
+                : slotBlocked
+                  ? "System Bay Full"
+                  : affordable
+                    ? "Cost " + padScore(entry.cost) + " Budget"
+                    : "Need " + padScore(candidateCost - SHIP_BUDGET) + " More Budget"
+          }</div>
+          <div class="card-summary">${selected ? "Remove" : "Add"} system part. Total build becomes ${padScore(candidateCost)} / ${padScore(SHIP_BUDGET)}</div>
+        `;
+        if (unlocked) {
+          button.addEventListener("click", () => toggleShipModule(entry.id));
+        }
+        ui.shipModuleCards.appendChild(button);
       });
       ui.upgradeCards.innerHTML = "";
       UPGRADE_DEFS.forEach((upgrade) => {
@@ -4177,10 +4429,12 @@
     function firePlayerBullet(origin, angle, heavy = false, damageScale = 1) {
       const player = state.player;
       const weapon = player.weapon || getWeaponDef();
+      const statDamageMul = 0.72 + player.damagePoints * 0.07;
       const speed = (heavy ? 540 : 700) * weapon.projectileSpeedMul;
       const radius = (heavy ? 6 + player.chaos * 1.5 : 4) + (weapon.id === "rail" ? 0.8 : 0);
       const damage =
         (heavy ? 36 + player.chaos * 10 : 13 + player.firerate * 1.2) *
+        statDamageMul *
         (heavy ? weapon.heavyDamageMul : weapon.shotDamageMul) *
         damageScale;
       state.bullets.push({
@@ -5714,6 +5968,16 @@
     ui.shipSpeedUpBtn.addEventListener("click", () => {
       clearUiFocus();
       shiftShipDesignStat("speed", 1);
+    });
+
+    ui.shipDamageDownBtn.addEventListener("click", () => {
+      clearUiFocus();
+      shiftShipDesignStat("damage", -1);
+    });
+
+    ui.shipDamageUpBtn.addEventListener("click", () => {
+      clearUiFocus();
+      shiftShipDesignStat("damage", 1);
     });
 
     ui.hangarMenuBtn.addEventListener("click", () => {
