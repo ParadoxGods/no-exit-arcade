@@ -546,6 +546,81 @@
       text-transform: uppercase;
     }
 
+    .shipyard-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .shipyard-item {
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #0a0d14;
+    }
+
+    .shipyard-item .summary-copy {
+      min-height: 42px;
+    }
+
+    .shipyard-stepper {
+      display: grid;
+      grid-template-columns: 52px minmax(0, 1fr) 52px;
+      gap: 10px;
+      align-items: center;
+      margin-top: 14px;
+    }
+
+    .shipyard-stepper-value {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #05070c;
+      font-family: Impact, "Arial Black", sans-serif;
+      font-size: 28px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .stepper-btn {
+      min-height: 52px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #f6efcf;
+      color: #05070c;
+      font: inherit;
+      font-weight: 700;
+      font-size: 22px;
+      cursor: pointer;
+      transition: opacity 0.16s ease, transform 0.16s ease;
+    }
+
+    .stepper-btn:hover,
+    .stepper-btn:focus-visible {
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .stepper-btn:disabled {
+      opacity: 0.35;
+      cursor: default;
+      transform: none;
+    }
+
+    .weapon-card.selected {
+      border-color: var(--card-color, var(--ink));
+      background: #111620;
+    }
+
+    .weapon-card .card-summary {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
     .center-flash {
       position: absolute;
       left: 50%;
@@ -1032,6 +1107,7 @@
       .bottombar,
       .menu-layout,
       .cards,
+      .shipyard-grid,
       .results-grid,
       .summary-grid {
         grid-template-columns: 1fr;
@@ -1523,6 +1599,40 @@
         </div>
       </div>
       <div class="screen-section">
+        <div class="screen-section-title">Shipyard</div>
+        <p class="screen-section-copy">Build the chassis before the run. Weapon, armor, and speed all draw from the same frame budget.</p>
+      </div>
+      <div class="shipyard-grid">
+        <div class="shipyard-item">
+          <div class="summary-label">Frame Budget</div>
+          <div class="summary-value" id="shipBudgetValue">12 / 12</div>
+          <p class="summary-copy" id="shipBudgetCopy">Balanced build online.</p>
+        </div>
+        <div class="shipyard-item">
+          <div class="summary-label">Armor Plates</div>
+          <p class="summary-copy">More armor means a thicker hull and more room to survive mistakes.</p>
+          <div class="shipyard-stepper">
+            <button class="stepper-btn" id="shipArmorDownBtn" type="button" aria-label="Lower armor">-</button>
+            <div class="shipyard-stepper-value" id="shipArmorValue">4</div>
+            <button class="stepper-btn" id="shipArmorUpBtn" type="button" aria-label="Raise armor">+</button>
+          </div>
+        </div>
+        <div class="shipyard-item">
+          <div class="summary-label">Thruster Banks</div>
+          <p class="summary-copy">Speed buys acceleration, top speed, and a livelier dash.</p>
+          <div class="shipyard-stepper">
+            <button class="stepper-btn" id="shipSpeedDownBtn" type="button" aria-label="Lower speed">-</button>
+            <div class="shipyard-stepper-value" id="shipSpeedValue">4</div>
+            <button class="stepper-btn" id="shipSpeedUpBtn" type="button" aria-label="Raise speed">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="screen-section">
+        <div class="screen-section-title">Weapon Mount</div>
+        <p class="screen-section-copy">Each weapon changes the feel of the run and consumes part of the same build budget.</p>
+      </div>
+      <div class="cards" id="shipWeaponCards"></div>
+      <div class="screen-section">
         <div class="screen-section-title">Hangar Upgrades</div>
         <p class="screen-section-copy">Scrap buys permanent ship parts. More categories open as your pilot level rises.</p>
       </div>
@@ -1729,6 +1839,15 @@
       hangarLevel: document.getElementById("hangarLevel"),
       hangarXpCopy: document.getElementById("hangarXpCopy"),
       hangarSkillPoints: document.getElementById("hangarSkillPoints"),
+      shipBudgetValue: document.getElementById("shipBudgetValue"),
+      shipBudgetCopy: document.getElementById("shipBudgetCopy"),
+      shipArmorValue: document.getElementById("shipArmorValue"),
+      shipSpeedValue: document.getElementById("shipSpeedValue"),
+      shipArmorDownBtn: document.getElementById("shipArmorDownBtn"),
+      shipArmorUpBtn: document.getElementById("shipArmorUpBtn"),
+      shipSpeedDownBtn: document.getElementById("shipSpeedDownBtn"),
+      shipSpeedUpBtn: document.getElementById("shipSpeedUpBtn"),
+      shipWeaponCards: document.getElementById("shipWeaponCards"),
       hangarStartBtn: document.getElementById("hangarStartBtn"),
       hangarMenuBtn: document.getElementById("hangarMenuBtn"),
       hangarBtn: document.getElementById("hangarBtn"),
@@ -1817,6 +1936,8 @@
     const SETTINGS_KEY = "no-exit-arcade-settings-v1";
     const PLAYER_KEY = "no-exit-arcade-player-v1";
     const PROFILE_KEY = "no-exit-arcade-profile-v1";
+    const SHIP_BUDGET = 12;
+    const SHIP_STAT_LIMIT = 6;
     const LEADERBOARD_CONFIG = {
       owner: "ParadoxGods",
       repo: "no-exit-arcade",
@@ -1893,7 +2014,11 @@
           skills: {
             ...createEmptySkills(),
             ...(parsed.skills || {})
-          }
+          },
+          design: normalizeShipDesign({
+            ...createDefaultShipDesign(),
+            ...(parsed.design || {})
+          })
         };
       } catch (error) {
         return createDefaultProfile();
@@ -1945,6 +2070,14 @@
       };
     }
 
+    function createDefaultShipDesign() {
+      return {
+        weapon: "pulse",
+        armor: 4,
+        speed: 4
+      };
+    }
+
     function createDefaultProfile() {
       return {
         scrap: 0,
@@ -1952,8 +2085,135 @@
         level: 1,
         skillPoints: 0,
         loadout: createEmptyLoadout(),
-        skills: createEmptySkills()
+        skills: createEmptySkills(),
+        design: createDefaultShipDesign()
       };
+    }
+
+    const WEAPON_DEFS = [
+      {
+        id: "pulse",
+        title: "Pulse Driver",
+        tag: "Balanced",
+        color: "#74f5ff",
+        cost: 4,
+        desc: "The baseline reactor rifle. Steady cadence, clean bolts, no gimmicks.",
+        shotDamageMul: 1,
+        heavyDamageMul: 1,
+        cooldownMul: 1,
+        projectileSpeedMul: 1,
+        projectileLifeMul: 1,
+        projectileSpread: 0,
+        extraSpread: 0,
+        baseProjectiles: 1,
+        extraLanesPerLevel: 2,
+        pierceBonus: 0,
+        recoilMul: 1
+      },
+      {
+        id: "scatter",
+        title: "Scatter Array",
+        tag: "Close Range",
+        color: "#ffc759",
+        cost: 3,
+        desc: "Wide pellet spread with a faster trigger. Brutal up close, wasteful at range.",
+        shotDamageMul: 0.44,
+        heavyDamageMul: 0.76,
+        cooldownMul: 0.84,
+        projectileSpeedMul: 0.84,
+        projectileLifeMul: 0.7,
+        projectileSpread: 0.24,
+        extraSpread: 0.05,
+        baseProjectiles: 3,
+        extraLanesPerLevel: 1,
+        pierceBonus: 0,
+        recoilMul: 1.12
+      },
+      {
+        id: "carbine",
+        title: "Needle Carbine",
+        tag: "Rapid",
+        color: "#8aff8f",
+        cost: 4,
+        desc: "High rate, fast bolts, and low recoil. It wins by never shutting up.",
+        shotDamageMul: 0.76,
+        heavyDamageMul: 0.84,
+        cooldownMul: 0.7,
+        projectileSpeedMul: 1.18,
+        projectileLifeMul: 0.92,
+        projectileSpread: 0.02,
+        extraSpread: 0.02,
+        baseProjectiles: 1,
+        extraLanesPerLevel: 2,
+        pierceBonus: 0,
+        recoilMul: 0.72
+      },
+      {
+        id: "rail",
+        title: "Rail Lance",
+        tag: "Piercing",
+        color: "#ff67ba",
+        cost: 5,
+        desc: "Slow, accurate, and vicious. Every shot wants to erase a straight line.",
+        shotDamageMul: 1.55,
+        heavyDamageMul: 1.42,
+        cooldownMul: 1.36,
+        projectileSpeedMul: 1.08,
+        projectileLifeMul: 1.16,
+        projectileSpread: 0,
+        extraSpread: 0,
+        baseProjectiles: 1,
+        extraLanesPerLevel: 1,
+        pierceBonus: 1,
+        recoilMul: 1.35
+      }
+    ];
+
+    function getWeaponDef(id = createDefaultShipDesign().weapon) {
+      return WEAPON_DEFS.find((weapon) => weapon.id === id) || WEAPON_DEFS[0];
+    }
+
+    function sanitizeShipDesign(source = {}) {
+      const base = createDefaultShipDesign();
+      return {
+        weapon: getWeaponDef(source.weapon || base.weapon).id,
+        armor: clamp(Math.round(Number(source.armor ?? base.armor) || 0), 0, SHIP_STAT_LIMIT),
+        speed: clamp(Math.round(Number(source.speed ?? base.speed) || 0), 0, SHIP_STAT_LIMIT)
+      };
+    }
+
+    function getShipDesignCost(design = state && state.meta ? state.meta.design : createDefaultShipDesign()) {
+      const safe = sanitizeShipDesign(design);
+      return getWeaponDef(safe.weapon).cost + safe.armor + safe.speed;
+    }
+
+    function normalizeShipDesign(source = {}) {
+      const normalized = sanitizeShipDesign(source);
+      while (getShipDesignCost(normalized) > SHIP_BUDGET) {
+        if (normalized.speed >= normalized.armor && normalized.speed > 0) {
+          normalized.speed -= 1;
+        } else if (normalized.armor > 0) {
+          normalized.armor -= 1;
+        } else {
+          return createDefaultShipDesign();
+        }
+      }
+      return normalized;
+    }
+
+    function getShipBudgetRemaining(design = state && state.meta ? state.meta.design : createDefaultShipDesign()) {
+      return SHIP_BUDGET - getShipDesignCost(design);
+    }
+
+    function getShipDesignSummary(design = state && state.meta ? state.meta.design : createDefaultShipDesign()) {
+      const safe = sanitizeShipDesign(design);
+      const weapon = getWeaponDef(safe.weapon);
+      return `${weapon.title} | Armor ${safe.armor} | Speed ${safe.speed}`;
+    }
+
+    function getShipDesignSignature(design = state && state.meta ? state.meta.design : createDefaultShipDesign()) {
+      const safe = sanitizeShipDesign(design);
+      return `weapon=${safe.weapon},armor=${safe.armor},speed=${safe.speed}`;
     }
 
     function createEmptyKillBreakdown() {
@@ -2504,6 +2764,9 @@
 
     function buildPlayer() {
       const loadout = state.meta.loadout;
+      const design = normalizeShipDesign(state.meta.design);
+      const weapon = getWeaponDef(design.weapon);
+      state.meta.design = design;
       const player = {
         x: state.width * 0.5,
         y: state.height * 0.56,
@@ -2511,8 +2774,8 @@
         vy: 0,
         angle: -Math.PI / 2,
         radius: 16,
-        health: 100 + loadout.recovery * 14,
-        maxHealth: 100 + loadout.recovery * 14,
+        health: 68 + design.armor * 8 + loadout.recovery * 14,
+        maxHealth: 68 + design.armor * 8 + loadout.recovery * 14,
         shield: 0,
         invuln: 0,
         fireCooldown: 0,
@@ -2542,6 +2805,11 @@
         startDrive: 0,
         driveGainBonus: 0,
         rushRetention: 0,
+        design,
+        weapon,
+        weaponColor: weapon.color,
+        armorPoints: design.armor,
+        speedPoints: design.speed,
         droneTimers: [],
         dronePositions: []
       };
@@ -2913,8 +3181,38 @@
       return active.map((skill) => skill.title + " " + state.meta.skills[skill.id]).join(", ");
     }
 
+    function updateShipDesign(nextPartial) {
+      if (state.phase !== "hangar") return false;
+      const current = sanitizeShipDesign(state.meta.design);
+      const candidate = sanitizeShipDesign({ ...current, ...nextPartial });
+      if (getShipDesignCost(candidate) > SHIP_BUDGET) {
+        toast("Frame Budget Full", "Pull points out of armor or speed before installing that part.");
+        return false;
+      }
+      if (
+        candidate.weapon === current.weapon &&
+        candidate.armor === current.armor &&
+        candidate.speed === current.speed
+      ) {
+        return false;
+      }
+      state.meta.design = candidate;
+      persistProfile();
+      audio.upgrade();
+      renderHangarShop();
+      return true;
+    }
+
+    function shiftShipDesignStat(stat, delta) {
+      const current = sanitizeShipDesign(state.meta.design);
+      const nextValue = clamp(current[stat] + delta, 0, SHIP_STAT_LIMIT);
+      if (nextValue === current[stat]) return false;
+      return updateShipDesign({ [stat]: nextValue });
+    }
+
     function getBuildSummary() {
       const parts = [];
+      parts.push(getShipDesignSummary());
       const loadout = UPGRADE_DEFS.filter((upgrade) => state.meta.loadout[upgrade.id] > 0)
         .map((upgrade) => upgrade.title + " " + state.meta.loadout[upgrade.id])
         .join(", ");
@@ -2943,7 +3241,7 @@
       const title = `${LEADERBOARD_CONFIG.issuePrefix} ${Math.floor(state.score)} | ${player}`;
       const body = [
         "<!-- no-exit-arcade-score -->",
-        "version: 3",
+        "version: 4",
         `player: ${player}`,
         `score: ${Math.floor(state.score)}`,
         `waves: ${state.stats.wavesCleared}`,
@@ -2955,6 +3253,7 @@
         `run_ms: ${Math.round(state.stats.runMs)}`,
         `scrap: ${state.lastRunScrap}`,
         `profile_level: ${state.meta.level}`,
+        `ship_design: ${getShipDesignSignature()}`,
         `loadout: ${getLoadoutSignature()}`,
         `skills: ${getSkillSignature()}`,
         `kill_breakdown: ${getKillBreakdownSignature()}`,
@@ -3350,12 +3649,55 @@
       const loadout = state.meta.loadout;
       const skills = state.meta.skills;
       const progress = getProfileProgress();
+      const design = normalizeShipDesign(state.meta.design);
+      const weapon = getWeaponDef(design.weapon);
+      const budgetUsed = getShipDesignCost(design);
+      const budgetLeft = SHIP_BUDGET - budgetUsed;
+      state.meta.design = design;
       ui.hangarCredits.textContent = padScore(state.meta.scrap);
       ui.hangarLevel.textContent = padScore(state.meta.level);
       ui.hangarSkillPoints.textContent = padScore(state.meta.skillPoints);
       ui.hangarXpCopy.textContent = padScore(progress.current) + " / " + padScore(progress.needed) + " XP to next level.";
       ui.upgradeCopy.textContent =
         "Progression is passive now: runs earn XP, levels grant skill points, and new hangar systems unlock over time.";
+      ui.shipBudgetValue.textContent = budgetUsed + " / " + SHIP_BUDGET;
+      ui.shipBudgetCopy.textContent =
+        weapon.title +
+        " installed. " +
+        (budgetLeft > 0
+          ? budgetLeft + " frame point" + (budgetLeft === 1 ? "" : "s") + " still open."
+          : "Budget maxed and ready for launch.");
+      ui.shipArmorValue.textContent = String(design.armor);
+      ui.shipSpeedValue.textContent = String(design.speed);
+      ui.shipArmorDownBtn.disabled = design.armor <= 0;
+      ui.shipSpeedDownBtn.disabled = design.speed <= 0;
+      ui.shipArmorUpBtn.disabled = design.armor >= SHIP_STAT_LIMIT || budgetLeft <= 0;
+      ui.shipSpeedUpBtn.disabled = design.speed >= SHIP_STAT_LIMIT || budgetLeft <= 0;
+      ui.shipWeaponCards.innerHTML = "";
+      WEAPON_DEFS.forEach((entry) => {
+        const selected = entry.id === design.weapon;
+        const affordable = entry.cost + design.armor + design.speed <= SHIP_BUDGET;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "card weapon-card" + (selected ? " selected" : "") + (!selected && !affordable ? " disabled" : "");
+        button.style.setProperty("--card-color", entry.color);
+        button.disabled = !selected && !affordable;
+        button.innerHTML = `
+          <div class="card-tag">${entry.tag}</div>
+          <div class="card-title">${entry.title}</div>
+          <div class="card-text">${entry.desc}</div>
+          <div class="card-level">${
+            selected
+              ? "Installed"
+              : affordable
+                ? "Cost " + entry.cost + " Frame"
+                : "Need " + (entry.cost + design.armor + design.speed - SHIP_BUDGET) + " More Points"
+          }</div>
+          <div class="card-summary">Armor ${design.armor} + Speed ${design.speed} + Weapon ${entry.cost} = ${entry.cost + design.armor + design.speed} / ${SHIP_BUDGET}</div>
+        `;
+        button.addEventListener("click", () => updateShipDesign({ weapon: entry.id }));
+        ui.shipWeaponCards.appendChild(button);
+      });
       ui.upgradeCards.innerHTML = "";
       UPGRADE_DEFS.forEach((upgrade) => {
         const level = loadout[upgrade.id];
@@ -3650,9 +3992,13 @@
 
     function firePlayerBullet(origin, angle, heavy = false, damageScale = 1) {
       const player = state.player;
-      const speed = heavy ? 540 : 700;
-      const radius = heavy ? 6 + player.chaos * 1.5 : 4;
-      const damage = (heavy ? 36 + player.chaos * 10 : 13 + player.firerate * 1.2) * damageScale;
+      const weapon = player.weapon || getWeaponDef();
+      const speed = (heavy ? 540 : 700) * weapon.projectileSpeedMul;
+      const radius = (heavy ? 6 + player.chaos * 1.5 : 4) + (weapon.id === "rail" ? 0.8 : 0);
+      const damage =
+        (heavy ? 36 + player.chaos * 10 : 13 + player.firerate * 1.2) *
+        (heavy ? weapon.heavyDamageMul : weapon.shotDamageMul) *
+        damageScale;
       state.bullets.push({
         x: origin.x + Math.cos(angle) * 20,
         y: origin.y + Math.sin(angle) * 20,
@@ -3660,9 +4006,9 @@
         vy: Math.sin(angle) * speed,
         radius,
         damage,
-        life: heavy ? 0.9 : 0.72,
-        color: heavy ? "#ffc759" : "#74f5ff",
-        pierce: player.pierce + (heavy ? 2 : 0),
+        life: (heavy ? 0.9 : 0.72) * weapon.projectileLifeMul,
+        color: heavy ? "#fff8de" : weapon.color,
+        pierce: player.pierce + weapon.pierceBonus + (heavy ? 2 : 0),
         heavy,
         hitTargets: new Set()
       });
@@ -3681,23 +4027,41 @@
       if (!wantsFire || player.fireCooldown > 0) return;
 
       player.shotCounter += 1;
-      const count = 1 + player.multishot * 2;
-      const spread = count > 1 ? 0.18 + player.multishot * 0.03 : 0;
+      const weapon = player.weapon || getWeaponDef();
+      const laneCount = 1 + player.multishot * weapon.extraLanesPerLevel;
+      const laneSpread = laneCount > 1 ? 0.18 + player.multishot * 0.03 + weapon.extraSpread : weapon.extraSpread;
+      const pelletCount = weapon.baseProjectiles;
+      const pelletSpread = weapon.projectileSpread;
       const heavyInterval = Math.max(7, 10 - player.chaos * 2);
       const heavy = player.chaos > 0 && player.shotCounter % heavyInterval === 0;
 
-      for (let i = 0; i < count; i += 1) {
-        const offset = count === 1 ? 0 : lerp(-spread, spread, i / (count - 1));
-        firePlayerBullet(player, player.angle + offset, heavy && i === Math.floor(count / 2), 1);
+      for (let i = 0; i < laneCount; i += 1) {
+        const laneOffset = laneCount === 1 ? 0 : lerp(-laneSpread, laneSpread, i / (laneCount - 1));
+        for (let pelletIndex = 0; pelletIndex < pelletCount; pelletIndex += 1) {
+          const pelletOffset =
+            pelletCount === 1 ? 0 : lerp(-pelletSpread, pelletSpread, pelletIndex / (pelletCount - 1));
+          const isHeavyShot =
+            heavy &&
+            i === Math.floor(laneCount / 2) &&
+            pelletIndex === Math.floor(pelletCount / 2);
+          firePlayerBullet(player, player.angle + laneOffset + pelletOffset, isHeavyShot, 1);
+        }
       }
 
       player.fireCooldown =
-        Math.max(0.08, 0.26 - player.firerate * 0.028) *
+        Math.max(0.08, (0.26 - player.firerate * 0.028) * weapon.cooldownMul) *
         (player.overdriveActive > 0 ? 0.56 : 1) *
         (player.rushActive > 0 ? 0.8 : 1);
-      player.vx -= Math.cos(player.angle) * (heavy ? 16 : 7);
-      player.vy -= Math.sin(player.angle) * (heavy ? 16 : 7);
-      burst(player.x + Math.cos(player.angle) * 16, player.y + Math.sin(player.angle) * 16, heavy ? "#ffc759" : "#74f5ff", heavy ? 10 : 6, heavy ? 0.9 : 0.55);
+      const recoil = (heavy ? 16 : 7) * weapon.recoilMul;
+      player.vx -= Math.cos(player.angle) * recoil;
+      player.vy -= Math.sin(player.angle) * recoil;
+      burst(
+        player.x + Math.cos(player.angle) * 16,
+        player.y + Math.sin(player.angle) * 16,
+        heavy ? "#fff8de" : weapon.color,
+        heavy ? 10 : 6,
+        heavy ? 0.9 : 0.55
+      );
       if (heavy) {
         audio.heavyShot();
       } else {
@@ -3730,12 +4094,13 @@
         dy /= mag;
       }
 
-      player.vx += dx * (440 + player.thrust * 36);
-      player.vy += dy * (440 + player.thrust * 36);
+      player.vx += dx * (344 + player.speedPoints * 24 + player.thrust * 36);
+      player.vy += dy * (344 + player.speedPoints * 24 + player.thrust * 36);
       player.invuln = Math.max(player.invuln, 0.24);
       player.dashCooldown = Math.max(
         0.95,
-        3.2 -
+        3.6 -
+          player.speedPoints * 0.1 -
           player.thrust * 0.28 -
           player.overdriveActive * 0.1 -
           (player.rushActive > 0 ? 0.55 : 0) -
@@ -3794,9 +4159,17 @@
       }
 
       const accel =
-        1040 + player.thrust * 130 + (player.overdriveActive > 0 ? 380 : 0) + (player.rushActive > 0 ? 220 : 0);
+        780 +
+        player.speedPoints * 65 +
+        player.thrust * 130 +
+        (player.overdriveActive > 0 ? 380 : 0) +
+        (player.rushActive > 0 ? 220 : 0);
       const maxSpeed =
-        320 + player.thrust * 34 + (player.overdriveActive > 0 ? 120 : 0) + (player.rushActive > 0 ? 55 : 0);
+        252 +
+        player.speedPoints * 17 +
+        player.thrust * 34 +
+        (player.overdriveActive > 0 ? 120 : 0) +
+        (player.rushActive > 0 ? 55 : 0);
       player.vx += move.x * accel * dt * moveStrength;
       player.vy += move.y * accel * dt * moveStrength;
       player.vx *= 1 / (1 + dt * 4.6);
@@ -4532,23 +4905,37 @@
       ctx.translate(player.x, player.y);
       ctx.rotate(player.angle);
       ctx.shadowBlur = player.overdriveActive > 0 ? 34 : 18;
-      ctx.shadowColor = player.overdriveActive > 0 ? "#ffc759" : "#74f5ff";
+      ctx.shadowColor = player.overdriveActive > 0 ? "#ffc759" : player.weaponColor;
 
-      ctx.fillStyle = player.overdriveActive > 0 ? "#ffd76f" : "#74f5ff";
+      const nose = 18 + player.speedPoints * 1.5;
+      const rear = -10 - player.armorPoints * 0.7;
+      const wing = 10 + player.armorPoints * 1.1;
+      ctx.fillStyle = player.overdriveActive > 0 ? "#ffd76f" : player.weaponColor;
       ctx.beginPath();
-      ctx.moveTo(20, 0);
-      ctx.lineTo(-10, -12);
-      ctx.lineTo(-2, 0);
-      ctx.lineTo(-10, 12);
+      ctx.moveTo(nose, 0);
+      ctx.lineTo(rear, -wing);
+      ctx.lineTo(-1 + player.speedPoints * 0.25, 0);
+      ctx.lineTo(rear, wing);
       ctx.closePath();
       ctx.fill();
 
+      if (player.armorPoints >= 3) {
+        ctx.fillStyle = "rgba(246, 239, 207, 0.22)";
+        ctx.beginPath();
+        ctx.moveTo(2, 0);
+        ctx.lineTo(rear + 4, -(wing - 3));
+        ctx.lineTo(rear - 4, 0);
+        ctx.lineTo(rear + 4, wing - 3);
+        ctx.closePath();
+        ctx.fill();
+      }
+
       ctx.fillStyle = "#fff8de";
       ctx.beginPath();
-      ctx.moveTo(8, 0);
-      ctx.lineTo(-8, -6);
+      ctx.moveTo(8 + player.speedPoints * 0.35, 0);
+      ctx.lineTo(-8 - player.armorPoints * 0.25, -6);
       ctx.lineTo(-2, 0);
-      ctx.lineTo(-8, 6);
+      ctx.lineTo(-8 - player.armorPoints * 0.25, 6);
       ctx.closePath();
       ctx.fill();
 
@@ -5117,6 +5504,26 @@
       audio.ensure();
       clearUiFocus();
       resetRun();
+    });
+
+    ui.shipArmorDownBtn.addEventListener("click", () => {
+      clearUiFocus();
+      shiftShipDesignStat("armor", -1);
+    });
+
+    ui.shipArmorUpBtn.addEventListener("click", () => {
+      clearUiFocus();
+      shiftShipDesignStat("armor", 1);
+    });
+
+    ui.shipSpeedDownBtn.addEventListener("click", () => {
+      clearUiFocus();
+      shiftShipDesignStat("speed", -1);
+    });
+
+    ui.shipSpeedUpBtn.addEventListener("click", () => {
+      clearUiFocus();
+      shiftShipDesignStat("speed", 1);
     });
 
     ui.hangarMenuBtn.addEventListener("click", () => {

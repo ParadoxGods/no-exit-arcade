@@ -33,6 +33,15 @@ export const SKILL_LIMITS = {
   bulwark: 3
 };
 
+export const SHIP_BUDGET = 12;
+export const SHIP_STAT_LIMIT = 6;
+export const SHIP_WEAPON_COSTS = {
+  pulse: 4,
+  scatter: 3,
+  carbine: 4,
+  rail: 5
+};
+
 export function sanitizePlayerName(name) {
   const cleaned = String(name || "").replace(/[^a-z0-9 _-]/gi, "").trim().slice(0, 20);
   return cleaned || "Anonymous";
@@ -63,6 +72,26 @@ function parseAssignmentMap(raw) {
     const key = left.trim();
     const amount = parseInteger(right.trim());
     if (!key || !Number.isFinite(amount)) return null;
+    parsed[key] = amount;
+  }
+  return parsed;
+}
+
+function parseShipDesign(raw) {
+  if (!raw) return null;
+  const parsed = {};
+  for (const chunk of String(raw).split(",")) {
+    const [left, right] = chunk.split("=");
+    if (!left || right === undefined) return null;
+    const key = left.trim();
+    const value = right.trim();
+    if (!key || !value) return null;
+    if (key === "weapon") {
+      parsed.weapon = value;
+      continue;
+    }
+    const amount = parseInteger(value);
+    if (!Number.isFinite(amount)) return null;
     parsed[key] = amount;
   }
   return parsed;
@@ -137,6 +166,7 @@ export function parseScoreIssue(issue) {
   const rawLoadout = parseAssignmentMap(fields.loadout);
   const rawSkills = parseAssignmentMap(fields.skills);
   const rawKillBreakdown = parseAssignmentMap(fields.kill_breakdown);
+  const rawShipDesign = parseShipDesign(fields.ship_design);
 
   return {
     issue,
@@ -156,6 +186,7 @@ export function parseScoreIssue(issue) {
     runMs: parseInteger(fields.run_ms),
     scrap: parseInteger(fields.scrap),
     profileLevel: parseInteger(fields.profile_level),
+    shipDesign: rawShipDesign,
     loadout: rawLoadout ? normalizeCountMap(rawLoadout, Object.keys(UPGRADE_LIMITS)) : null,
     skills: rawSkills ? normalizeCountMap(rawSkills, Object.keys(SKILL_LIMITS)) : normalizeCountMap({}, Object.keys(SKILL_LIMITS)),
     killBreakdown: rawKillBreakdown ? normalizeCountMap(rawKillBreakdown, Object.keys(SCORE_VALUES)) : null,
@@ -179,7 +210,7 @@ export function validateScoreIssue(parsed) {
   if (!parsed.markerPresent) {
     reasons.push("Missing score marker.");
   }
-  if (parsed.version !== 2 && parsed.version !== 3) {
+  if (parsed.version !== 2 && parsed.version !== 3 && parsed.version !== 4) {
     reasons.push("Unsupported score payload version.");
   }
 
@@ -213,6 +244,9 @@ export function validateScoreIssue(parsed) {
   }
   if (!parsed.killBreakdown) {
     reasons.push("Kill breakdown payload is invalid.");
+  }
+  if (parsed.version >= 4 && !parsed.shipDesign) {
+    reasons.push("Ship design payload is invalid.");
   }
 
   if (reasons.length) {
@@ -256,6 +290,29 @@ export function validateScoreIssue(parsed) {
 
   if (parsed.profileLevel !== null && (!Number.isInteger(parsed.profileLevel) || parsed.profileLevel < 1)) {
     reasons.push("Profile level is invalid.");
+  }
+
+  if (parsed.version >= 4) {
+    const weapon = String(parsed.shipDesign.weapon || "").trim();
+    const armor = parsed.shipDesign.armor;
+    const speed = parsed.shipDesign.speed;
+    if (!(weapon in SHIP_WEAPON_COSTS)) {
+      reasons.push("Ship weapon is invalid.");
+    }
+    if (!Number.isInteger(armor) || armor < 0 || armor > SHIP_STAT_LIMIT) {
+      reasons.push("Ship armor allocation is invalid.");
+    }
+    if (!Number.isInteger(speed) || speed < 0 || speed > SHIP_STAT_LIMIT) {
+      reasons.push("Ship speed allocation is invalid.");
+    }
+    if (
+      weapon in SHIP_WEAPON_COSTS &&
+      Number.isInteger(armor) &&
+      Number.isInteger(speed) &&
+      SHIP_WEAPON_COSTS[weapon] + armor + speed > SHIP_BUDGET
+    ) {
+      reasons.push("Ship design exceeds the frame budget.");
+    }
   }
 
   const waveScore = expectedWaveScore(parsed.waves);
